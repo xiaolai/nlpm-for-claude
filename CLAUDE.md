@@ -5,19 +5,26 @@ Natural-Language Programming Manager for Claude Code.
 ## Architecture
 
 Commands orchestrate agents. Agents use skills as reference knowledge.
+Each command does one thing — no flags.
 
-v0.1: scan (discover artifacts) → lint (score quality) → init (configure)
+## Commands
 
-## Components
+- commands/ls.md — `/nlpm:ls` — discover + inventory NL artifacts
+- commands/score.md — `/nlpm:score` — 100-point quality scoring per artifact
+- commands/check.md — `/nlpm:check` — cross-component consistency checks
+- commands/fix.md — `/nlpm:fix` — auto-fix fixable issues
+- commands/init.md — `/nlpm:init` — initialize project config
+- commands/shared/discover.md — artifact discovery patterns (not user-invocable)
+- commands/shared/classify.md — artifact type classification (not user-invocable)
 
-- commands/scan.md — discover + inventory NL artifacts
-- commands/lint.md — static analysis with 100-point scoring
-- commands/init.md — initialize project config
-- commands/shared/discover.md — artifact discovery patterns
-- commands/shared/classify.md — artifact type classification
+## Agents
+
 - agents/scanner.md — haiku, mechanical discovery
-- agents/linter.md — sonnet, judgment-based analysis
-- skills/nlpm/conventions/ — Claude Code + prompt conventions
+- agents/linter.md — sonnet, judgment-based quality analysis
+
+## Skills
+
+- skills/nlpm/conventions/ — Claude Code + prompt conventions (refreshable)
 - skills/nlpm/patterns/ — NL programming best practices
 - skills/nlpm/scoring/ — quality rubric with calibration examples
 

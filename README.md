@@ -1,14 +1,16 @@
 # nlpm
 
-Natural-Language Programming Manager — scan, lint, and score NL artifacts with Claude-native intelligence.
+Natural-Language Programming Manager — score, check, and fix NL artifacts with Claude-native intelligence.
 
 Part of the [xiaolai Claude plugin marketplace](https://github.com/xiaolai/claude-plugin-marketplace).
 
 ## What it does
 
-- **Scan** — discover all NL programming artifacts in a repo (skills, agents, commands, rules, hooks, prompts)
-- **Lint** — static analysis with 100-point quality scoring per artifact
-- **Init** — configure lint strictness per project
+- **ls** — discover all NL programming artifacts in a repo
+- **score** — 100-point quality scoring per artifact
+- **check** — cross-component consistency (references, orphans, contradictions)
+- **fix** — auto-fix fixable issues
+- **init** — configure lint strictness per project
 
 Claude-native — no external model dependency. Claude IS the authority on Claude Code conventions.
 
@@ -22,16 +24,13 @@ claude plugin install nlpm@xiaolai --scope project
 
 | Command | Description |
 |---------|-------------|
-| `/nlpm:scan` | Discover and inventory all NL artifacts in a repo |
-| `/nlpm:lint` | Static analysis with 100-point quality scoring |
-| `/nlpm:init` | Initialize NLPM for a project — set lint strictness |
+| `/nlpm:ls` | Discover and inventory all NL artifacts in a repo |
+| `/nlpm:score` | Score artifact quality (100-point scale) |
+| `/nlpm:check` | Cross-component consistency checks |
+| `/nlpm:fix` | Auto-fix fixable issues |
+| `/nlpm:init` | Initialize NLPM for a project — set strictness |
 
-### Lint flags
-
-| Flag | Effect |
-|------|--------|
-| `--all` | Add cross-component checks (reference integrity, orphans, contradictions) |
-| `--fix` | Auto-fix fixable issues (missing user-invocable, heading gaps, field renames) |
+Each command does one thing. No flags to memorize.
 
 ## How scoring works
 
@@ -75,13 +74,13 @@ score_threshold: 70
 
 Strictness levels: relaxed (60), standard (70), strict (80).
 
-## What it lints
+## What it scores
 
 Artifacts in scope for v0.1:
 - **Plugin artifacts**: commands, shared partials, agents, skills, hooks, plugin.json, .mcp.json
 - **Project config**: CLAUDE.md, .claude/rules/, settings
 
-Coming in future versions: general AI prompts, agent frameworks, design docs, synthetic testing, refactoring.
+Coming in future versions: general AI prompts, synthetic testing, refactoring, diff.
 
 ## Prerequisites
 
