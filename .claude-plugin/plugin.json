@@ -1,0 +1,8 @@
+{
+  "name": "nlpm",
+  "version": "0.1.0",
+  "description": "Natural-Language Programming Manager — scan, lint, and write NL artifacts with Claude-native quality scoring",
+  "author": { "name": "xiaolai" },
+  "license": "MIT",
+  "keywords": ["nlp", "lint", "prompt", "skill", "agent", "rules", "quality"]
+}
