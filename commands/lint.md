@@ -1,6 +1,6 @@
 ---
 description: "Lint natural language programming artifacts — static analysis with 100-point quality scoring"
-argument-hint: "[path] [--plugin] [--fix]"
+argument-hint: "[path] [--all] [--fix]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Task, AskUserQuestion
 ---
 
@@ -23,7 +23,7 @@ Read `.claude/nlpm.local.md` if it exists. Extract `score_threshold` from the YA
 | (empty) | Lint all Category A+B artifacts in cwd |
 | directory path | Lint all artifacts under that directory |
 | file path | Lint that single file |
-| `--plugin` | Add cross-component checks after individual linting |
+| `--all` | Add cross-component checks after individual linting |
 | `--fix` | Auto-fix fixable issues after linting |
 
 ### Step 3: Discover Artifacts
@@ -42,7 +42,7 @@ Batch artifacts into groups of up to 5. For each batch, dispatch the `nlpm:linte
 
 Collect results: per-artifact score + issue list.
 
-### Step 5: Cross-Component Checks (if --plugin)
+### Step 5: Cross-Component Checks (if --all)
 
 Dispatch one additional `nlpm:linter` call with ALL artifacts and the instruction to perform cross-component analysis:
 - Check all literal path references resolve to existing files

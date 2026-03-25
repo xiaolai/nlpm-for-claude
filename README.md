@@ -30,7 +30,7 @@ claude plugin install nlpm@xiaolai --scope project
 
 | Flag | Effect |
 |------|--------|
-| `--plugin` | Add cross-component checks (reference integrity, orphans, contradictions) |
+| `--all` | Add cross-component checks (reference integrity, orphans, contradictions) |
 | `--fix` | Auto-fix fixable issues (missing user-invocable, heading gaps, field renames) |
 
 ## How scoring works
