@@ -2,7 +2,7 @@
 description: |
   Static analysis engine for NL programming artifacts. Scores on a 100-point scale using deterministic penalties.
   <example>
-  Context: User runs /nlpm:lint on agent files
+  Context: User runs /nlpm:score on agent files
   assistant: "I'll use the linter to analyze these agents."
   </example>
   <example>
@@ -14,6 +14,7 @@ color: yellow
 tools: Read, Glob, Grep
 skills:
   - nlpm:conventions
+  - nlpm:patterns
   - nlpm:scoring
 ---
 

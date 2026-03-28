@@ -1,4 +1,5 @@
 ---
+description: "Classify a file path to its NL artifact type — command, agent, skill, rule, hook-config, manifest, etc."
 user-invocable: false
 ---
 

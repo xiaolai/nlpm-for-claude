@@ -368,4 +368,4 @@ Total penalties: -59
 This skill covers the NLPM scoring formula, penalty tables, score bands, and calibration examples. It does NOT cover:
 - Artifact schemas and valid field values → see `nlpm:conventions`
 - Patterns and anti-patterns catalog → see `nlpm:patterns`
-- How to run the lint command → see `commands/lint.md`
+- How to run the score command → see `commands/score.md`

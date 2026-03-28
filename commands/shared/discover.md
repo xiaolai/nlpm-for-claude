@@ -1,4 +1,5 @@
 ---
+description: "Discover NL programming artifact files in a directory by category (A: plugin, B: project config, F: memory)"
 user-invocable: false
 ---
 

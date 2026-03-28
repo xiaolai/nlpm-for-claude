@@ -11,7 +11,7 @@ Read `.claude/nlpm.local.md`. If exists, show current settings and ask: "Reconfi
 
 ### Step 2: Scan
 
-Run artifact discovery (same as /nlpm:scan) to show what's in the project.
+Run artifact discovery (same as /nlpm:ls) to show what's in the project.
 
 ### Step 3: Ask Strictness
 
@@ -54,7 +54,7 @@ NLPM initialized for this project.
   Artifacts found: {N}
   Config: .claude/nlpm.local.md
 
-Run /nlpm:lint to assess your artifacts.
+Run /nlpm:score to assess your artifacts.
 ```
 
 **Error handling:**

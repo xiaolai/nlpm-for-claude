@@ -18,7 +18,7 @@ $ARGUMENTS
 |-------|------|
 | (empty) | current working directory |
 | directory path | use that path |
-| file path | ERROR: "Expected a directory. Use /nlpm:lint for individual files." |
+| file path | ERROR: "Expected a directory. Use /nlpm:score for individual files." |
 | nonexistent path | ERROR: "Directory not found: {path}" |
 
 ### Step 2: Discover Artifacts

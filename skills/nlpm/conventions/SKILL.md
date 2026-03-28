@@ -272,7 +272,7 @@ Located at `.claude/hooks.json` or path specified in `plugin.json`.
         "hooks": [
           {
             "type": "prompt",
-            "command": "You are now in strict TDD mode. No production code without a failing test."
+            "prompt": "You are now in strict TDD mode. No production code without a failing test."
           }
         ]
       }
@@ -286,7 +286,7 @@ Located at `.claude/hooks.json` or path specified in `plugin.json`.
 - Second-level keys: event names (case-sensitive)
 - Each event maps to an array of matcher objects
 - Each matcher object: `{ "matcher": "<regex>", "hooks": [...] }`
-- Each hook object: `{ "type": "command"|"prompt"|"agent", "command": "..." }`
+- Each hook object: `{ "type": "command"|"prompt"|"agent", "<type-field>": "..." }` where the field name matches the type: `"command"` for type `command`, `"prompt"` for type `prompt`, `"agent"` for type `agent`
 
 ---
 

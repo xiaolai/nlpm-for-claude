@@ -24,9 +24,23 @@ Each command does one thing — no flags.
 
 ## Skills
 
+### Core (used by linter/scanner agents)
 - skills/nlpm/conventions/ — Claude Code + prompt conventions (refreshable)
-- skills/nlpm/patterns/ — NL programming best practices
+- skills/nlpm/patterns/ — NL programming patterns + anti-patterns
 - skills/nlpm/scoring/ — quality rubric with calibration examples
+
+### Writing Reference (loaded on demand when writing new artifacts)
+- skills/nlpm/writing-skills/ — how to write SKILL.md files
+- skills/nlpm/writing-agents/ — how to write agent definitions
+- skills/nlpm/writing-rules/ — how to write .claude/rules/ files
+- skills/nlpm/writing-prompts/ — universal prompt engineering guide
+- skills/nlpm/writing-hooks/ — how to write Claude Code hooks
+- skills/nlpm/writing-plugins/ — how to design and build plugins
+- skills/nlpm/orchestration/ — multi-agent workflow patterns
+
+## Hooks
+
+- hooks/hooks.json — PostToolUse advisory: reminds to score after editing NL artifacts
 
 ## Scoring
 

@@ -14,7 +14,7 @@ $ARGUMENTS
 
 ### Step 1: Score First
 
-Run the same scoring logic as `/nlpm:score` on the target path. Collect all issues.
+Dispatch the `nlpm:linter` agent via Task tool to score all artifacts at the target path. Collect all issues.
 
 ### Step 2: Classify Issues
 
@@ -22,7 +22,7 @@ Separate issues into auto-fixable and not-auto-fixable:
 
 **Auto-fixable (will be applied):**
 - Missing `user-invocable: false` on shared partials → add to frontmatter
-- `tools` field where `allowed-tools` expected → rename field
+- `tools` field in command frontmatter where `allowed-tools` is expected → rename field (note: `tools` in agent frontmatter is valid and not auto-fixed)
 - Heading hierarchy gaps (## → ####) → insert missing ### level
 - Trailing whitespace → strip
 
