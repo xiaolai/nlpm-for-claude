@@ -32,10 +32,19 @@ Patterns to search (relative to target directory):
 |---------|-------|
 | `CLAUDE.md` | Root project instructions |
 | `.claude/CLAUDE.md` | Claude config directory instructions |
+| `**/CLAUDE.md` | Subdirectory CLAUDE.md files (monorepo packages) |
 | `.claude/rules/**/*.md` | Rule files |
-| `.claude/settings.json` | Claude settings |
-| `.claude/settings.local.json` | Local Claude settings |
+| `.claude/settings.json` | Claude settings — also check for inline `hooks` key |
+| `.claude/settings.local.json` | Local Claude settings — also check for inline `hooks` key |
 | `.claude/**/*.local.md` | Local plugin config files |
+| `.claude/commands/**/*.md` | User-level custom commands |
+
+## Category F — Memory Files
+
+| Pattern | Notes |
+|---------|-------|
+| `~/.claude/projects/*/memory/*.md` | Project memory files |
+| `~/.claude/projects/*/memory/MEMORY.md` | Memory index |
 
 ## Skip Directories
 
@@ -53,14 +62,17 @@ Always skip these directories during traversal:
 
 ## Instructions
 
-1. Receive: `directory` (absolute path), `category` ("A", "B", or "both")
+1. Receive: `directory` (absolute path), `category` ("A", "B", "F", or "both")
 2. Use Glob to find files matching each pattern within the directory
 3. Filter out any results that fall inside skip directories
 4. For each found file, use Read to count lines
 5. Return a structured list with entries: `{ path, category, pattern_matched, line_count }`
+6. For Category B settings files (`.claude/settings.json`, `.claude/settings.local.json`): after discovering the file, flag whether it contains a top-level `hooks` key — if so, note `inline_hooks: true` on the entry so the scanner knows to treat it as a hook source as well
 
 ## Notes
 
 - For `commands/**/*.md` results, exclude any file whose path contains `/commands/shared/` (those match the shared partials pattern instead)
 - `.gitkeep` files are not artifacts — ignore them
-- If a file matches multiple patterns, use the first matching pattern in the order listed above (Category A first, then B)
+- If a file matches multiple patterns, use the first matching pattern in the order listed above (Category A first, then B, then F)
+- `**/CLAUDE.md` in Category B will also match the root `CLAUDE.md` — deduplicate: if a file was already matched by the root `CLAUDE.md` pattern, do not add it again
+- Category F patterns expand `~` to the user's home directory before globbing

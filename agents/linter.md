@@ -44,6 +44,7 @@ Some checks require judgment rather than pattern matching. Mark these as "(heuri
 - Model appropriateness: mechanical task heuristic = body has <20 instruction lines AND no judgment phrases ("evaluate", "decide", "judge", "assess quality", "determine if")
 - Ambiguity detection: some uses of flagged words may be legitimate in context — note your confidence
 - Cross-rule contradiction: requires understanding both rules' intent
+- CLAUDE.md gets deeper analysis: check for build/test commands, architecture overview, valid `@` imports, stale file references, actionability ratio (>60% description is a flag), prerequisites section, and conflicts with `.claude/rules/` files. All 11 CLAUDE.md checks from `nlpm:scoring` apply.
 
 ## Output Format
 

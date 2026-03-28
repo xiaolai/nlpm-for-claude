@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "A natural language artifact was just modified. If the file matches one of these patterns: commands/**/*.md, agents/**/*.md, skills/**/SKILL.md, .claude/rules/**/*.md, hooks/**/*.json, CLAUDE.md — remind the user they can run /nlpm:score on it to check quality. Keep the reminder to one short sentence. If the file doesn't match any pattern, say nothing."
+          }
+        ]
+      }
+    ]
+  }
+}

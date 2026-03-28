@@ -128,6 +128,30 @@ Penalties stack. The floor is 0; the ceiling is 100. No bonuses — the default 
 | File exists | No CLAUDE.md in plugin root | -10 |
 | Under 200 lines | CLAUDE.md exceeds 200 lines | -5 |
 | Actionable content | CLAUDE.md has no actionable guidance (just filler) | -10 |
+| Build/run command | No instructions for how to build or run the project | -10 |
+| Test command | No instructions for how to run tests | -5 |
+| Architecture overview | No structure/component description (what lives where) | -5 |
+| Valid `@` imports | Contains `@` import syntax referencing a file that doesn't exist | -10 |
+| No stale file references | Mentions files or functions that no longer exist in the repo | -10 |
+| Actionability ratio | >60% of content is description rather than instructions | -5 |
+| Prerequisites section | No section covering required tools, versions, or setup steps | -5 |
+| No rule conflicts | CLAUDE.md says X while a `.claude/rules/` file says not-X | -15 |
+
+---
+
+### Memory Files
+
+Applies to `.md` files located in `~/.claude/projects/*/memory/` directories.
+
+| Check | Pass (+0) | Penalty |
+|-------|-----------|---------|
+| Has YAML frontmatter | Present | -15 |
+| `name` in frontmatter | Present | -10 |
+| `description` in frontmatter | Present | -10 |
+| `type` in frontmatter | Present (`user`/`feedback`/`project`/`reference`) | -5 |
+| Content matches declared type | Yes | -10 |
+| Referenced in MEMORY.md index | Yes | -5 (orphaned memory) |
+| Stale content | No references to removed files or functions | -10 |
 
 ---
 

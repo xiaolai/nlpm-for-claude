@@ -343,6 +343,42 @@ skills: ["nlpm:conventions", "nlpm:patterns"]
 
 ---
 
+## 12. Memory File Conventions
+
+Memory files are `.md` files that Claude Code writes and reads as persistent per-project knowledge.
+
+**Location:**
+```
+~/.claude/projects/<project-slug>/memory/
+```
+
+**Index file:** `MEMORY.md` lives at the same level as individual memory files. It is a one-line-per-entry index, not a memory file itself. Each line references one memory file by filename.
+
+**Individual memory files** MUST include YAML frontmatter:
+
+```yaml
+---
+name: "short identifier"
+description: "one-line summary of what this memory contains"
+type: user | feedback | project | reference
+---
+```
+
+**`type` values:**
+| Value | Meaning |
+|-------|---------|
+| `user` | Preferences, habits, or facts about the user |
+| `feedback` | Corrections or lessons from past sessions |
+| `project` | Project-specific facts, decisions, or context |
+| `reference` | External reference material copied into memory |
+
+**Rules:**
+- Every memory file must appear in `MEMORY.md` — orphaned files (present in the directory but not in the index) are flagged by the linter
+- `MEMORY.md` itself is the index; it does not need frontmatter and is not scored as a memory file
+- Memory files should not reference other files or functions that have since been deleted — stale references reduce the signal-to-noise ratio of the memory store
+
+---
+
 ## Scope Note
 
 This skill covers Claude Code plugin component schemas and conventions. It does NOT cover:
