@@ -28,6 +28,7 @@ Each command does one thing — no flags.
 - skills/nlpm/conventions/ — Claude Code + prompt conventions (refreshable)
 - skills/nlpm/patterns/ — NL programming patterns + anti-patterns
 - skills/nlpm/scoring/ — quality rubric with calibration examples
+- skills/nlpm/rules/ — the 50 rules of natural language programming (R01-R50)
 
 ### Writing Reference (loaded on demand when writing new artifacts)
 - skills/nlpm/writing-skills/ — how to write SKILL.md files
