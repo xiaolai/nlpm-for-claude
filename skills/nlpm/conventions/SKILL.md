@@ -1,6 +1,6 @@
 ---
 name: conventions
-description: "Canonical reference for Claude Code plugin schemas, hook events, frontmatter fields, prompt engineering conventions, and naming patterns. Used by NLPM lint and write commands."
+description: "Use when writing, reviewing, or validating Claude Code plugin artifacts — check frontmatter schemas, hook event names, naming conventions, prompt structure, or reference syntax. Loaded by the NLPM linter for schema validation."
 version: 0.1.0
 ---
 

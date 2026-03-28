@@ -1,6 +1,6 @@
 ---
 name: patterns
-description: "NL programming patterns and anti-patterns catalog. Best practices for writing skills, agents, commands, rules, hooks, and prompts."
+description: "Use when writing or reviewing NL artifacts and need to check for anti-patterns — vague quantifiers, prohibitions without alternatives, oversized skills, write-on-read-only agents, monolithic prompts, or linter-duplicating rules."
 version: 0.1.0
 ---
 

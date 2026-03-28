@@ -73,6 +73,6 @@ Trend: 3 snapshots — 82 → 87 → 88 (improving)
 
 ### Error Handling
 
-- No history file → prompt to run /nlpm:score first
+- No history file → first run: score all artifacts, create history file, show baseline (no comparison available)
 - Path doesn't exist → error with message
 - History file malformed → warn, start fresh history

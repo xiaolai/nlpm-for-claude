@@ -1,6 +1,6 @@
 ---
 name: scoring
-description: "Quality scoring rubric for NL programming artifacts. 100-point scale with deterministic penalties and calibration examples."
+description: "Use when scoring NL artifact quality, applying penalties, or calibrating lint judgment — contains the 100-point rubric with penalty tables per artifact type and 4 worked calibration examples."
 version: 0.1.0
 ---
 

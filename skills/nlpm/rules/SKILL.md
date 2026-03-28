@@ -14,6 +14,9 @@ version: 0.1.0
 
 **R01. No vague quantifiers without criteria.** "appropriate", "relevant", "as needed", "sufficient", "adequate", "reasonable", "properly", "correctly", "some", "several", "various" are meaningless without specifics. Replace with measurable criteria. Penalty: -2 each, cap -20.
 
+Bad: "Use appropriate error handling."
+Good: "Return `Result<T, AppError>` from all API handlers. Map errors to HTTP status codes via the `From<AppError> for StatusCode` impl."
+
 **R02. Every line must earn its tokens.** Context window is finite. If a line doesn't change Claude's behavior, delete it.
 
 **R03. Positive framing over prohibitions.** "Use X" not "Don't use Y." The Pink Elephant effect: Claude fixates on prohibited things and sometimes does them anyway.
@@ -37,6 +40,9 @@ version: 0.1.0
 ## Agents
 
 **R09. `<example>` blocks are mandatory.** Minimum 2. Each: Context (what user is doing) + user message + assistant response. Without them, triggering is unreliable.
+
+Bad: `<example>\nContext: User needs help\nuser: "help me"\nassistant: "I'll help."\n</example>`
+Good: `<example>\nContext: Developer refactoring auth module before PR\nuser: "Check if the auth changes have any security issues before I merge"\nassistant: "I'll dispatch the security-reviewer to audit the auth changes for vulnerabilities."\n</example>`
 
 **R10. Model must match task complexity.** haiku = mechanical (parsing, counting). sonnet = reasoning (analysis, review). opus = complex judgment (orchestration). Wrong tier wastes money or produces weak results.
 
@@ -73,6 +79,9 @@ version: 0.1.0
 ## Rules (.claude/rules/)
 
 **R21. Bold imperative + rationale.** Three parts: what to do, what goes wrong without it, why. `**Use X.** Without it, Y breaks because Z.`
+
+Bad: `Don't use any.`
+Good: `**Use specific types instead of any.** Without specific types, TypeScript's compiler can't catch type errors at build time, and refactoring becomes unsafe because callers and callees disagree silently.`
 
 **R22. Must be enforceable.** If you can't verify compliance in a code review, it's not a rule. Vague rules waste tokens.
 
@@ -151,3 +160,7 @@ version: 0.1.0
 **R49. CLAUDE.md for Claude, README for humans.** CLAUDE.md: architecture, conventions, component map. README: installation, usage, features.
 
 **R50. Bump version in four places.** plugin.json, plugin's marketplace.json, central marketplace.json, central README version table. Miss one = version drift.
+
+---
+
+> **Scope**: This skill covers the quality rules for NL programming artifacts. For the penalty-based scoring rubric that enforces these rules, see `nlpm:scoring`. For patterns and anti-patterns with worked examples, see `nlpm:patterns`. For conventions and schemas, see `nlpm:conventions`.

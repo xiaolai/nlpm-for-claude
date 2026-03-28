@@ -9,12 +9,12 @@ Each command does one thing — no flags.
 
 ## Commands
 
-- commands/ls.md — `/nlpm:ls` — discover + inventory NL artifacts
-- commands/score.md — `/nlpm:score` — 100-point quality scoring per artifact
-- commands/check.md — `/nlpm:check` — cross-component consistency checks
-- commands/fix.md — `/nlpm:fix` — auto-fix fixable issues
-- commands/trend.md — `/nlpm:trend` — track quality score trends over time
-- commands/init.md — `/nlpm:init` — initialize project config
+- commands/ls.md — `/nlpm:ls` — run first to discover what NL artifacts exist in the project
+- commands/score.md — `/nlpm:score` — run to get 100-point quality scores; use after any artifact edit
+- commands/check.md — `/nlpm:check` — run to verify cross-component references before shipping
+- commands/fix.md — `/nlpm:fix` — run to auto-repair fixable issues flagged by score
+- commands/trend.md — `/nlpm:trend` — run periodically to detect quality drift over multiple sessions
+- commands/init.md — `/nlpm:init` — run once when adding NLPM to a new project
 - commands/shared/discover.md — artifact discovery patterns (not user-invocable)
 - commands/shared/classify.md — artifact type classification (not user-invocable)
 
@@ -43,6 +43,27 @@ Each command does one thing — no flags.
 ## Hooks
 
 - hooks/hooks.json — PostToolUse advisory: reminds to score after editing NL artifacts
+
+## Build & Run
+
+No build step required — this is a pure markdown plugin. Install with:
+```
+claude plugin install nlpm@xiaolai --scope project
+```
+
+Test by running `/nlpm:ls` on any project with NL artifacts.
+
+## Prerequisites
+
+None. No Python, Node.js, or compiled dependencies.
+
+## Development
+
+When modifying this plugin:
+- Run `/nlpm:score ./` after changes to verify quality stays above 90
+- Run `/nlpm:check` to verify cross-component references
+- Bump version in plugin.json AND marketplace.json
+- Push plugin repo, then update central marketplace
 
 ## Scoring
 
