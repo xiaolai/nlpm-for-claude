@@ -99,6 +99,9 @@ Penalties stack. The floor is 0; the ceiling is 100. No bonuses — the default 
 | Event names valid | Uses unrecognized event name | -15 |
 | Case correct | Event name has wrong case (e.g. `pretooluse`) | -10 |
 | Scripts exist | Referenced script file does not exist | -20 |
+| Command safety | Hook command contains dangerous patterns (rm -rf, git push --force, DROP TABLE) | -15 |
+| Matcher regex valid | Matcher pattern doesn't compile as valid regex | -10 |
+| Timeout reasonable | Hook specifies timeout > 30s (likely hangs) | -5 |
 
 ---
 
@@ -118,6 +121,18 @@ Penalties stack. The floor is 0; the ceiling is 100. No bonuses — the default 
 |-------|-----------|---------|
 | Valid JSON | File fails JSON parse | -25 |
 | Server `command` present | MCP server entry missing `command` field | -15 |
+
+---
+
+### Settings Files (.claude/settings.json, .claude/settings.local.json)
+
+| Check | Condition | Penalty |
+|-------|-----------|---------|
+| Valid JSON | File fails JSON parse | -25 |
+| No hardcoded secrets | Contains API keys, tokens, or passwords | -25 |
+| Permission mode sanity | `bypassPermissions` enabled in a shared project settings file (not .local) | -15 |
+| Recognized keys | Contains unknown top-level keys not in Claude Code schema | -5 each, cap -15 |
+| Hook definitions valid | `hooks` key present — check event names valid and case-correct | -10 per invalid |
 
 ---
 

@@ -40,6 +40,6 @@ Checked in order — **first match wins**:
 - Path matching uses simple substring/suffix checks, not regex
 - For rules 8 and 9, check that the immediate parent directory name is `.claude-plugin`
 - Rule 15 applies to files like `.claude/nlpm.local.md`
-- Rule 16 applies to `.claude/settings.json` and `.claude/settings.local.json`
+- Rule 16 applies to `.claude/settings.json` and `.claude/settings.local.json`; settings files are now fully scored (not just discovered) — see `nlpm:scoring` for the settings penalty table
 - Rule 12 matches memory files from `~/.claude/projects/*/memory/` — the `/memory/` path segment is the key discriminator
 - Rules 13 and 14 both produce `claude-md`; rule 13 exists to document that subdirectory CLAUDE.md files (monorepo packages) receive the same type as the root one

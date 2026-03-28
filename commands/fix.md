@@ -25,11 +25,17 @@ Separate issues into auto-fixable and not-auto-fixable:
 - `tools` field in command frontmatter where `allowed-tools` is expected → rename field (note: `tools` in agent frontmatter is valid and not auto-fixed)
 - Heading hierarchy gaps (## → ####) → insert missing ### level
 - Trailing whitespace → strip
+- Missing `description` in shared partial frontmatter → generate from filename and first heading
+- Missing `name` in skill frontmatter → derive from directory name
+- Missing `argument-hint` on commands that reference `$ARGUMENTS` in body → add `"[args]"`
+
+**Suggested fixes (shown with diff, applied only if user approves):**
+- Agent using opus for mechanical task → suggest downgrade to sonnet/haiku with rationale
+- Agent with no `<example>` blocks → generate skeleton examples from description
+- Skill >500 lines → suggest split points based on H2 sections
 
 **NOT auto-fixable (reported but not modified):**
 - Vague descriptions (what should the trigger phrases be?)
-- Missing `<example>` blocks (what scenarios?)
-- Model selection (haiku vs sonnet vs opus?)
 - Behavioral contradictions (which artifact is right?)
 - Scope boundaries, output formats, error handling
 

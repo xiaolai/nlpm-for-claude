@@ -13,6 +13,7 @@ Part of the [xiaolai Claude plugin marketplace](https://github.com/xiaolai/claud
 - [What it scores](#what-it-scores)
 - [Scoring System](#scoring-system)
 - [Penalty Reference](#penalty-reference)
+- [The 50 Rules](#the-50-rules)
 - [Configuration](#configuration)
 - [Continuous Enforcement](#continuous-enforcement)
 - [Architecture](#architecture)
@@ -23,7 +24,7 @@ Part of the [xiaolai Claude plugin marketplace](https://github.com/xiaolai/claud
 
 NLPM treats natural language artifacts as **programs that can be linted**. Just as ESLint scores JavaScript and ruff scores Python, NLPM scores the markdown files that drive AI behavior: skills, agents, commands, rules, hooks, prompts, CLAUDE.md, and memory files.
 
-Five commands, each doing one thing:
+Six commands, each doing one thing:
 
 | Command | What it does |
 |---------|-------------|
@@ -31,6 +32,7 @@ Five commands, each doing one thing:
 | `/nlpm:score` | Score artifact quality (100-point scale) |
 | `/nlpm:check` | Cross-component consistency checks |
 | `/nlpm:fix` | Auto-fix fixable issues |
+| `/nlpm:trend` | Show quality score trends over time — track improvements, detect degradation |
 | `/nlpm:init` | Initialize NLPM for a project |
 
 Claude-native — no Codex, no external models, no API keys, no runtime dependencies.
@@ -53,6 +55,7 @@ claude plugin install nlpm@xiaolai --scope user
 /nlpm:score agents/         # score just agents
 /nlpm:check                 # check cross-component consistency
 /nlpm:fix                   # auto-fix what's fixable
+/nlpm:trend                 # track score history over time
 ```
 
 Example output:
@@ -159,14 +162,59 @@ What it fixes automatically:
 - `tools` field where `allowed-tools` is expected
 - Heading hierarchy gaps (## followed by #### with no ###)
 - Trailing whitespace
+- Missing `description` in shared partial frontmatter (generated from filename and first heading)
+- Missing `name` in skill frontmatter (derived from directory name)
+- Missing `argument-hint` on commands that reference `$ARGUMENTS` in body
+
+What it suggests (shown with diff, applied only with user approval):
+- Agent using opus for mechanical task → downgrade suggestion with rationale
+- Agent with no `<example>` blocks → skeleton examples generated from description
+- Skill >500 lines → suggested split points based on H2 sections
 
 What it reports but doesn't fix (requires human judgment):
 - Vague descriptions
-- Missing `<example>` blocks
-- Model selection
 - Behavioral contradictions
+- Scope boundaries, output formats, error handling
 
 Shows score delta per file: `agents/reviewer.md  68 -> 93 (+25)`
+
+### /nlpm:trend
+
+Track quality scores over time. Detects regressions before they accumulate.
+
+```
+/nlpm:trend                       # score all artifacts and compare to history
+/nlpm:trend agents/               # trend for a specific directory
+```
+
+On first run, prompts you to run `/nlpm:score` to create the baseline snapshot. On subsequent runs:
+
+1. Scores all artifacts
+2. Compares each file to its previous score
+3. Saves a new snapshot to `.claude/nlpm-history.json`
+4. Reports improvements, regressions, and new files
+
+Example output:
+
+```
+NLPM Trend Report
+
+Snapshot: 2026-03-28 (3rd snapshot, 2 previous)
+
+File                              Score   Previous  Delta
+--------------------------------------------------------------
+agents/linter.md                  95      92        +3 improved
+agents/scanner.md                 90      90         0 unchanged
+commands/score.md                 95      88        +7 improved
+.claude/rules/testing.md          78      82        -4 degraded
+
+Overall: 88/100 (was 87, +1)
+
+Degraded (needs attention):
+  .claude/rules/testing.md  82 → 78 (-4)
+
+Trend: 3 snapshots — 82 → 87 → 88 (improving)
+```
 
 ### /nlpm:init
 
@@ -182,7 +230,7 @@ Configure NLPM for a project.
 
 ## What it scores
 
-NLPM scores 12 artifact types across 3 categories:
+NLPM scores 13 artifact types across 3 categories:
 
 ### Category A: Plugin Artifacts
 
@@ -202,7 +250,7 @@ NLPM scores 12 artifact types across 3 categories:
 |----------|-------------|-----------|
 | CLAUDE.md | `**/CLAUDE.md` | 11 checks: existence, length, actionability, build commands, test commands, architecture, @imports, stale refs, actionability ratio, prerequisites, rule conflicts |
 | Rules | `.claude/rules/*.md` | 7 checks: description, format, rationale, enforceability, budget, conflicts, tooling duplication |
-| Settings | `.claude/settings*.json` | Discovered but not scored (v0.3) |
+| Settings | `.claude/settings*.json` | 5 checks: valid JSON, no hardcoded secrets, permission mode sanity, recognized keys, hook definitions valid |
 
 ### Category F: Memory
 
@@ -271,6 +319,19 @@ The scoring skill includes 4 worked examples that anchor the linter's judgment:
 
 See `skills/nlpm/scoring/SKILL.md` for complete penalty tables per artifact type.
 
+## The 50 Rules
+
+NLPM enforces 50 rules across 10 artifact types — from "no vague quantifiers" (R01) to "bump version in four places" (R50). The full rulebook is in `skills/nlpm/rules/SKILL.md`. Key highlights:
+
+- **R09**: Agent `<example>` blocks are mandatory (minimum 2)
+- **R10**: Model must match task complexity (haiku/sonnet/opus)
+- **R21**: Rules use bold imperative + rationale format
+- **R23**: Total rules budget <500 lines
+- **R40**: Prompts follow five layers: Role → Context → Task → Constraints → Output
+- **R44**: QC gate between AI processing and output
+
+See the full list: `skills/nlpm/rules/SKILL.md`
+
 ## Configuration
 
 ### Project config
@@ -309,6 +370,7 @@ commands/           User-facing commands
   score.md          Score quality
   check.md          Cross-component checks
   fix.md            Auto-fix issues
+  trend.md          Track score history over time
   init.md           Configure project
   shared/
     discover.md     Artifact path patterns (not user-invocable)
@@ -318,14 +380,28 @@ agents/             Dispatched by commands
   scanner.md        haiku — fast artifact discovery
   linter.md         sonnet — judgment-based scoring
 
-skills/nlpm/        Knowledge base
+skills/nlpm/        Knowledge base (11 skills across 2 groups)
+
+  Core (loaded by linter/scanner agents):
   conventions/      Claude Code schemas, hook events, naming patterns
   patterns/         NL programming best practices + anti-patterns
   scoring/          Penalty tables, calibration examples
+  rules/            The 50 Rules of Natural Language Programming (R01-R50)
+
+  Writing Reference (loaded on demand when writing new artifacts):
+  writing-skills/   How to write SKILL.md files
+  writing-agents/   How to write agent definitions
+  writing-rules/    How to write .claude/rules/ files
+  writing-prompts/  Universal prompt engineering guide
+  writing-hooks/    How to write Claude Code hooks
+  writing-plugins/  How to design and build plugins
+  orchestration/    Multi-agent workflow patterns
 
 hooks/
   hooks.json        PostToolUse advisory reminder
 ```
+
+The `rules` skill contains the 50 Rules of Natural Language Programming (R01-R50) — the normative reference for what constitutes a well-formed NL artifact.
 
 **Why sonnet for the linter?** Several checks require judgment — ambiguity detection, model appropriateness assessment, "is this rule enforceable?" These are heuristic assessments that haiku handles poorly. The linter labels heuristic findings explicitly so users know which assessments involved judgment.
 
@@ -336,9 +412,9 @@ hooks/
 | Version | Status | What it adds |
 |---------|--------|-------------|
 | v0.1.0 | Shipped | ls, score (was lint), init |
-| v0.2.0 | Current | check, fix, CLAUDE.md deep scoring, memory artifacts, lint-on-save hook |
-| v0.3.0 | Planned | settings.json validation, hook command safety, expanded auto-fix |
-| v0.4.0 | Planned | Trend tracking (.claude/nlpm-history.json), /nlpm:trend command |
+| v0.2.0 | Shipped | check, fix, CLAUDE.md deep scoring, memory artifacts, lint-on-save hook |
+| v0.3.0 | Shipped | settings.json validation, hook command safety, expanded auto-fix |
+| v0.4.0 | Shipped | Trend tracking (.claude/nlpm-history.json), /nlpm:trend command |
 | v0.5.0 | Planned | Cross-plugin scanning, ecosystem-wide duplicate detection |
 
 ## Prerequisites

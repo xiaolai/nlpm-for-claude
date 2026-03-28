@@ -64,3 +64,7 @@ Score guide: 90+ Excellent | 80-89 Good | 70-79 Adequate | 60-69 Weak | <60 Rewr
 - File unreadable → skip with warning: "Skipped {path}: unreadable"
 - Malformed YAML frontmatter → score penalty -25, continue analysis on body
 - Empty file → score 0, issue: "Empty file"
+
+### Step 6: Update History (if tracking)
+
+If `.claude/nlpm-history.json` exists, append a new snapshot with the current scores. Do not create the file if it doesn't exist — use `/nlpm:trend` to start tracking.
