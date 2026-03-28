@@ -67,4 +67,4 @@ Score guide: 90+ Excellent | 80-89 Good | 70-79 Adequate | 60-69 Weak | <60 Rewr
 
 ### Step 6: Update History (if tracking)
 
-If `.claude/nlpm-history.json` exists, append a new snapshot with the current scores. Do not create the file if it doesn't exist — use `/nlpm:trend` to start tracking.
+If `.claude/nlpm-history.json` does not exist, skip this step. Run `/nlpm:trend` to initialize tracking — it creates the history file on first run.

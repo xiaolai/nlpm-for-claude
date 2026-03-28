@@ -15,7 +15,7 @@ $ARGUMENTS
 ### Step 1: Load History
 
 Read `.claude/nlpm-history.json` from the project root. If it doesn't exist, show:
-"No score history found. Run `/nlpm:score` to create the first snapshot, then `/nlpm:trend` to track changes over time."
+"No score history found. This is your first run — scores will be captured and a history file created."
 
 ### Step 2: Score Current State
 

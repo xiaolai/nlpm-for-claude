@@ -1,7 +1,7 @@
 ---
 description: "Discover and inventory all natural language programming artifacts in a repository"
 argument-hint: "[repo-path]"
-allowed-tools: Read, Glob, Grep, Bash, Task
+allowed-tools: Read, Glob, Grep, Task
 ---
 
 ## User Input

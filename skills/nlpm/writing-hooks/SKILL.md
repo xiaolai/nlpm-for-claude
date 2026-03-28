@@ -30,15 +30,20 @@ Is the check deterministic (regex, file exists, JSON schema)?
 
 ```json
 {
-  "hooks": [
-    {
-      "type": "command",
-      "event": "PreToolUse",
-      "matcher": "Write|Edit",
-      "command": "${CLAUDE_PLUGIN_ROOT}/scripts/check-loc.sh",
-      "timeout": 10000
-    }
-  ]
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/check-loc.sh",
+            "timeout": 10000
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -48,13 +53,18 @@ Hook script receives JSON on stdin with tool name and parameters. It outputs JSO
 
 ```json
 {
-  "hooks": [
-    {
-      "type": "prompt",
-      "event": "UserPromptSubmit",
-      "prompt": "Remember: this project uses Result<T, E> for error handling. Never use try/catch directly."
-    }
-  ]
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Remember: this project uses Result<T, E> for error handling. Never use try/catch directly."
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -62,14 +72,19 @@ Hook script receives JSON on stdin with tool name and parameters. It outputs JSO
 
 ```json
 {
-  "hooks": [
-    {
-      "type": "agent",
-      "event": "PostToolUse",
-      "matcher": "Write|Edit",
-      "agent": "Verify the written file follows project conventions. Check: import order, export style, naming conventions. Report any violations."
-    }
-  ]
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "agent",
+            "agent": "Verify the written file follows project conventions. Check: import order, export style, naming conventions. Report any violations."
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
 

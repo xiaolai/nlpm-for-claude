@@ -174,7 +174,7 @@ Applies to `.md` files located in `~/.claude/projects/*/memory/` directories.
 
 | Check | Condition | Penalty |
 |-------|-----------|---------|
-| Vague quantifier | Each occurrence of: "appropriate", "relevant", "as needed", "sufficient", "adequate", "reasonable" without measurable criteria | -2 each |
+| Vague quantifier | Each occurrence of: "appropriate", "relevant", "as needed", "sufficient", "adequate", "reasonable", "properly", "correctly", "some", "several", "various" without measurable criteria | -2 each |
 | Vague quantifier cap | Total vague quantifier penalty | max -20 |
 
 ---
@@ -270,7 +270,7 @@ Total dependencies: N | Vulnerable: N | Outdated: N | License issues: N
 
 ---
 
-### Example 2: Weak Agent (52/100)
+### Example 2: Rewrite Agent (41/100)
 
 **Artifact:**
 ```markdown
@@ -291,19 +291,15 @@ to the user's requirements.
 - Zero `<example>` blocks: **-15**
 - Description is generic (1 vague phrase, 0 specific phrases): **-15**
 - `opus` declared for a routine code-help task (haiku/sonnet appropriate): **-5**
-- `tools` declared but 4+ likely unused in practice (WebSearch, WebFetch, Glob, Write all declared without body justification): **-12** (4 × -3)
-- "appropriate" (×1): **-2**
-- "relevant" (×1): **-2**
-- "as needed" (×1): **-2**
+- `tools` declared but too many unused (WebSearch, WebFetch, Glob all declared without body justification): **-10** (judged as 3–4 unused, rounded)
+- "appropriate" + "relevant" + "as needed" (vague quantifiers, 2 instances): **-4**
 - No output format defined: **-10**
 
-Total penalties: -63
-Raw: 100 - 63 = 37, but vague quantifier cap applies: vague penalties = -6, under cap.
-Recalculate: -15 -15 -5 -12 -2 -2 -2 -10 = -63
+Total penalties: -59
 
-**Final: max(0, 100 - 63) = 37/100** — Rewrite.
+**Final: max(0, 100 - 59) = 41/100** — Rewrite.
 
-*(For calibration: a 52 score would have somewhat fewer issues. The exact arithmetic from the spec produces 37 here. The example illustrates the failure modes; exact numbers may differ by which tools are judged unused.)*
+*(For calibration: the exact number of unused tools and vague quantifier hits can vary by reviewer. The important thing is that this artifact scores well below 60 — multiple fundamental issues.)*
 
 ---
 

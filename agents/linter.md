@@ -16,6 +16,7 @@ skills:
   - nlpm:conventions
   - nlpm:patterns
   - nlpm:scoring
+  - nlpm:rules
 ---
 
 ## Your Mission
@@ -30,7 +31,7 @@ You will receive one or more NL artifacts to analyze. For each artifact:
 2. Apply the scoring rubric from the `nlpm:scoring` skill:
    - Start at 100
    - Apply all applicable penalties for this artifact type
-   - Scan for vague quantifiers: "appropriate", "relevant", "some", "several", "various", "as needed", "properly", "correctly" — penalty -2 each, capped at -20
+   - Scan for vague quantifiers: "appropriate", "relevant", "as needed", "sufficient", "adequate", "reasonable", "properly", "correctly", "some", "several", "various" — penalty -2 each, capped at -20
    - Compute final_score = max(0, min(100, 100 + adjustments))
 3. List each issue found with:
    - Severity: HIGH (≥10 point penalty), MEDIUM (5-9 points), LOW (<5 points)

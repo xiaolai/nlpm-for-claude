@@ -13,6 +13,7 @@ Each command does one thing — no flags.
 - commands/score.md — `/nlpm:score` — 100-point quality scoring per artifact
 - commands/check.md — `/nlpm:check` — cross-component consistency checks
 - commands/fix.md — `/nlpm:fix` — auto-fix fixable issues
+- commands/trend.md — `/nlpm:trend` — track quality score trends over time
 - commands/init.md — `/nlpm:init` — initialize project config
 - commands/shared/discover.md — artifact discovery patterns (not user-invocable)
 - commands/shared/classify.md — artifact type classification (not user-invocable)

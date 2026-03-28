@@ -12,7 +12,7 @@ version: 0.1.0
 
 ## Universal (all artifacts)
 
-**R01. No vague quantifiers without criteria.** "appropriate", "relevant", "as needed", "properly", "correctly" are meaningless without specifics. Replace with measurable criteria. Penalty: -2 each, cap -20.
+**R01. No vague quantifiers without criteria.** "appropriate", "relevant", "as needed", "sufficient", "adequate", "reasonable", "properly", "correctly", "some", "several", "various" are meaningless without specifics. Replace with measurable criteria. Penalty: -2 each, cap -20.
 
 **R02. Every line must earn its tokens.** Context window is finite. If a line doesn't change Claude's behavior, delete it.
 
