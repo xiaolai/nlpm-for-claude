@@ -14,6 +14,7 @@ Part of the [xiaolai Claude plugin marketplace](https://github.com/xiaolai/claud
 - [Scoring System](#scoring-system)
 - [Penalty Reference](#penalty-reference)
 - [The 50 Rules](#the-50-rules)
+- [NL-TDD](#nl-tdd-test-driven-development)
 - [Configuration](#configuration)
 - [Continuous Enforcement](#continuous-enforcement)
 - [Architecture](#architecture)
@@ -24,7 +25,7 @@ Part of the [xiaolai Claude plugin marketplace](https://github.com/xiaolai/claud
 
 NLPM treats natural language artifacts as **programs that can be linted**. Just as ESLint scores JavaScript and ruff scores Python, NLPM scores the markdown files that drive AI behavior: skills, agents, commands, rules, hooks, prompts, CLAUDE.md, and memory files.
 
-Six commands, each doing one thing:
+Seven commands, each doing one thing:
 
 | Command | What it does |
 |---------|-------------|
@@ -33,6 +34,7 @@ Six commands, each doing one thing:
 | `/nlpm:check` | Cross-component consistency checks |
 | `/nlpm:fix` | Auto-fix fixable issues |
 | `/nlpm:trend` | Show quality score trends over time — track improvements, detect degradation |
+| `/nlpm:test` | Run NL artifact tests against spec files (TDD for NL programming) |
 | `/nlpm:init` | Initialize NLPM for a project |
 
 Claude-native — no Codex, no external models, no API keys, no runtime dependencies.
@@ -332,6 +334,56 @@ NLPM enforces 50 rules across 10 artifact types — from "no vague quantifiers" 
 
 See the full list: `skills/nlpm/rules/SKILL.md`
 
+## NL-TDD (Test-Driven Development)
+
+Write test specs BEFORE writing artifacts. The TDD cycle for NL programming:
+
+```
+1. Write spec:    .nlpm-test/my-agent.spec.md     (define expectations)
+2. /nlpm:test     → RED (artifact doesn't exist)
+3. Write artifact: agents/my-agent.md              (create the NL artifact)
+4. /nlpm:test     → check trigger accuracy, output format, score
+5. /nlpm:score    → verify quality score
+6. Iterate        → fix until GREEN
+```
+
+### Spec file format
+
+Create `.nlpm-test/<name>.spec.md`:
+
+```yaml
+---
+artifact: agents/my-agent.md
+type: agent
+min_score: 85
+---
+```
+
+Then add sections for what to test:
+
+- **Triggers On** — queries that SHOULD trigger the artifact
+- **Does Not Trigger On** — queries that should NOT trigger
+- **Output Contains** — expected elements in output
+- **Handles Input** — input scenarios with expected behavior
+- **Frontmatter Valid** — expected frontmatter fields and values
+
+Example output:
+
+```
+NLPM Test Report
+
+Spec                              Artifact                    Result   Checks
+─────────────────────────────────────────────────────────────────────────────────
+my-agent.spec.md                  agents/my-agent.md          PASS     5/5
+core-skill.spec.md                skills/core/SKILL.md        FAIL     3/5
+  ✗ Trigger: "optimize hooks" → NO trigger (expected YES)
+  ✗ Score: 68 < min 85
+
+Overall: 1 passed, 1 failed
+```
+
+See full spec format: `skills/nlpm/testing/SKILL.md`
+
 ## Configuration
 
 ### Project config
@@ -371,6 +423,7 @@ commands/           User-facing commands
   check.md          Cross-component checks
   fix.md            Auto-fix issues
   trend.md          Track score history over time
+  test.md           Run NL artifact tests (TDD)
   init.md           Configure project
   shared/
     discover.md     Artifact path patterns (not user-invocable)
@@ -379,14 +432,16 @@ commands/           User-facing commands
 agents/             Dispatched by commands
   scanner.md        haiku — fast artifact discovery
   linter.md         sonnet — judgment-based scoring
+  tester.md         sonnet — evaluates artifacts against test specs
 
-skills/nlpm/        Knowledge base (11 skills across 2 groups)
+skills/nlpm/        Knowledge base (12 skills across 2 groups)
 
-  Core (loaded by linter/scanner agents):
+  Core (loaded by linter/scanner/tester agents):
   conventions/      Claude Code schemas, hook events, naming patterns
   patterns/         NL programming best practices + anti-patterns
   scoring/          Penalty tables, calibration examples
   rules/            The 50 Rules of Natural Language Programming (R01-R50)
+  testing/          NL-TDD spec format, test patterns, TDD cycle
 
   Writing Reference (loaded on demand when writing new artifacts):
   writing-skills/   How to write SKILL.md files
@@ -415,7 +470,8 @@ The `rules` skill contains the 50 Rules of Natural Language Programming (R01-R50
 | v0.2.0 | Shipped | check, fix, CLAUDE.md deep scoring, memory artifacts, lint-on-save hook |
 | v0.3.0 | Shipped | settings.json validation, hook command safety, expanded auto-fix |
 | v0.4.0 | Shipped | Trend tracking (.claude/nlpm-history.json), /nlpm:trend command |
-| v0.5.0 | Planned | Cross-plugin scanning, ecosystem-wide duplicate detection |
+| v0.5.0 | Shipped | NL-TDD: /nlpm:test command, tester agent, testing skill, spec file format |
+| v0.6.0 | Planned | Cross-plugin scanning, ecosystem-wide duplicate detection |
 
 ## Prerequisites
 
