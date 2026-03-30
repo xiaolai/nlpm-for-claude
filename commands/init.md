@@ -45,7 +45,16 @@ When linting NL artifacts in this project, use **{strictness}** strictness.
 Flag artifacts scoring below **{threshold}/100** for improvement.
 ```
 
-### Step 5: Confirm
+### Step 5: Update .gitignore
+
+Append the following to `.gitignore` (skip lines already present):
+
+```
+# nlpm generated artifacts
+.claude/nlpm-history.json
+```
+
+### Step 6: Confirm
 
 ```
 NLPM initialized for this project.
