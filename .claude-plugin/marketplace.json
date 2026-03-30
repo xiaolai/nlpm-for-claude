@@ -1,16 +1,31 @@
 {
   "name": "xiaolai",
-  "owner": { "name": "xiaolai" },
+  "owner": {
+    "name": "xiaolai"
+  },
   "plugins": [
     {
       "name": "nlpm",
-      "source": { "source": "github", "repo": "xiaolai/nlpm-for-claude" },
-      "description": "Natural-Language Programming Manager — scan, lint, and write NL artifacts with Claude-native quality scoring",
-      "version": "0.6.1",
-      "author": { "name": "xiaolai" },
+      "source": {
+        "source": "github",
+        "repo": "xiaolai/nlpm-for-claude"
+      },
+      "description": "Natural-Language Programming Manager \u2014 scan, lint, and write NL artifacts with Claude-native quality scoring",
+      "version": "0.6.2",
+      "author": {
+        "name": "xiaolai"
+      },
       "repository": "https://github.com/xiaolai/nlpm-for-claude",
       "license": "MIT",
-      "keywords": ["nlp", "lint", "prompt", "skill", "agent", "rules", "quality"],
+      "keywords": [
+        "nlp",
+        "lint",
+        "prompt",
+        "skill",
+        "agent",
+        "rules",
+        "quality"
+      ],
       "category": "developer-tools"
     }
   ]

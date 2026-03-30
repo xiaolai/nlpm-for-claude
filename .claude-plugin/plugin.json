@@ -1,8 +1,18 @@
 {
   "name": "nlpm",
-  "version": "0.6.1",
-  "description": "Natural-Language Programming Manager — scan, lint, and write NL artifacts with Claude-native quality scoring",
-  "author": { "name": "xiaolai" },
+  "version": "0.6.2",
+  "description": "Natural-Language Programming Manager \u2014 scan, lint, and write NL artifacts with Claude-native quality scoring",
+  "author": {
+    "name": "xiaolai"
+  },
   "license": "MIT",
-  "keywords": ["nlp", "lint", "prompt", "skill", "agent", "rules", "quality"]
+  "keywords": [
+    "nlp",
+    "lint",
+    "prompt",
+    "skill",
+    "agent",
+    "rules",
+    "quality"
+  ]
 }
