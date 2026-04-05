@@ -14,7 +14,7 @@ $ARGUMENTS
 
 ### Step 1: Score First
 
-Dispatch the `nlpm:linter` agent via Task tool to score all artifacts at the target path. Collect all issues.
+Dispatch the `nlpm:scorer` agent via Task tool to score all artifacts at the target path. Collect all issues.
 
 ### Step 2: Classify Issues
 

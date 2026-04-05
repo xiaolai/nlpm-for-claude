@@ -1,7 +1,7 @@
 ---
 description: "Score NL programming artifacts — 100-point quality analysis per file"
 argument-hint: "[path]"
-allowed-tools: Read, Glob, Grep, Task
+allowed-tools: Read, Glob, Grep, Bash, Task
 ---
 
 ## User Input
@@ -23,6 +23,9 @@ Read `.claude/nlpm.local.md` if it exists. Extract `score_threshold` (default: 7
 | (empty) | Score all Category A+B artifacts in cwd |
 | directory path | Score all artifacts under that directory |
 | file path | Score that single file |
+| --changed | Score only files changed since last commit (uses `git diff --name-only HEAD`) |
+
+If `--changed` is present: run `git diff --name-only HEAD` to get changed files, then filter through `commands/shared/classify.md` to keep only NL artifacts. Skip the full discovery step.
 
 ### Step 3: Discover Artifacts
 
@@ -33,10 +36,17 @@ If no artifacts found → "No NL programming artifacts found."
 
 ### Step 4: Score Artifacts
 
-Batch artifacts into groups of up to 5. For each batch, dispatch the `nlpm:linter` agent with:
+Dispatch two agents in parallel for each batch of up to 5 artifacts:
+
+1. **`nlpm:scorer`** -- scores each artifact on the 100-point rubric (penalties, structure, heuristics)
+2. **`nlpm:vague-scanner`** -- counts vague quantifier words mechanically (fast, haiku)
+
+The scorer incorporates the vague-scanner's word counts into its penalty calculation. If the vague-scanner reports counts that differ from the scorer's own detection, use the vague-scanner's counts (deterministic grep is more reliable than heuristic detection for word counting).
+
+Pass to both agents:
 - The artifact contents (read each file)
 - The artifact types (from classify.md)
-- Reference to nlpm:conventions and nlpm:scoring skills
+- Any rule overrides from the config (if `rule_overrides` is present in `.claude/nlpm.local.md`)
 
 Collect results: per-artifact score + issue list.
 

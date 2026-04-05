@@ -12,7 +12,7 @@ Best practices and anti-patterns for writing Claude Code plugin components. Each
 
 ## Patterns (Use These)
 
-### P1: Trigger-Optimized Descriptions
+### P1: Trigger-Optimized Descriptions (R04)
 
 Write agent and skill descriptions with 3+ specific trigger phrases rather than a single generic one-liner. Claude uses description text to decide when to invoke an agent; richer vocabulary improves recall.
 
@@ -33,7 +33,7 @@ The bad example won't trigger reliably — "analyzes files" matches too broadly 
 
 ---
 
-### P2: Example-Driven Agents
+### P2: Example-Driven Agents (R09)
 
 Include 2+ `<example>` blocks in agent descriptions with realistic Context, user turn, and assistant response. Examples anchor the agent's behavior and dramatically improve triggering consistency.
 
@@ -50,7 +50,7 @@ assistant: <what this agent does in response>
 
 ---
 
-### P3: Imperative + Rationale Rules
+### P3: Imperative + Rationale Rules (R03, R21)
 
 Write rules as "**Do X** because Y" not "Don't do Z". The Pink Elephant effect: telling someone not to think of a pink elephant makes them think of it. Prohibitions without alternatives are hard to follow under inference load.
 
@@ -70,7 +70,7 @@ Don't hardcode absolute paths in hooks or scripts.
 
 ---
 
-### P4: Layered Prompts
+### P4: Layered Prompts (R40)
 
 Structure complex command and agent bodies in this order:
 1. Role/persona
@@ -83,7 +83,7 @@ Mixing these layers — especially burying the task in the middle of constraints
 
 ---
 
-### P5: Graduated Model Selection
+### P5: Graduated Model Selection (R10)
 
 Match model tier to task complexity:
 
@@ -97,7 +97,7 @@ Using opus for a file-glob scan wastes tokens with no quality improvement. Using
 
 ---
 
-### P6: Scoped Skills
+### P6: Scoped Skills (R05, R07)
 
 Keep each skill under 500 lines with a clearly bounded scope. Include a "Scope Note" section at the bottom stating what the skill covers and what it does NOT cover, with cross-references to related skills (`plugin:skill` format).
 
@@ -108,7 +108,7 @@ Benefits:
 
 ---
 
-### P7: Least-Privilege Tools
+### P7: Least-Privilege Tools (R11)
 
 Only list tools in `allowed-tools` (commands) or `tools` (agents) that the body actually uses. Declaring unused tools is misleading and may grant unintended capabilities.
 
@@ -126,7 +126,7 @@ tools: ["Glob", "Read", "Write", "Edit", "Bash", "WebSearch"]
 
 ---
 
-### P8: Explicit Output Formats
+### P8: Explicit Output Formats (R12, R16, R41)
 
 Every command and agent body should define the exact output structure. Don't leave format to inference — specify section names, table columns, score display format, and summary location.
 
@@ -147,7 +147,7 @@ One subsection per file with full penalty breakdown.
 
 ---
 
-### P9: Error Path Coverage
+### P9: Error Path Coverage (R17)
 
 Handle the three failure modes explicitly in every command and agent:
 1. **Empty input** — no files found, no argument provided
@@ -160,7 +160,7 @@ Each failure mode should produce a clear, actionable error message — not a sil
 
 ## Anti-Patterns (Avoid These)
 
-### A1: Vague Quantifiers
+### A1: Vague Quantifiers (R01)
 
 Words like "appropriate", "relevant", "as needed", "sufficient", "adequate", "reasonable" without measurable criteria are lint targets. They make rules and instructions unenforceable.
 
@@ -173,7 +173,7 @@ Words like "appropriate", "relevant", "as needed", "sufficient", "adequate", "re
 
 ---
 
-### A2: Prohibitions Without Alternatives
+### A2: Prohibitions Without Alternatives (R03)
 
 "Don't use X" without explaining what to use instead violates P3 and leaves the reader with no actionable path.
 
@@ -183,7 +183,7 @@ Words like "appropriate", "relevant", "as needed", "sufficient", "adequate", "re
 
 ---
 
-### A3: Oversized Skills
+### A3: Oversized Skills (R05)
 
 Skills over 500 lines become context bloat. When multiple oversized skills are loaded together, the effective context for the actual task shrinks.
 
@@ -191,7 +191,7 @@ Skills over 500 lines become context bloat. When multiple oversized skills are l
 
 ---
 
-### A4: Write/Edit on Read-Only Agents
+### A4: Write/Edit on Read-Only Agents (R11)
 
 Audit, review, and analysis agents should never declare `Write` or `Edit` in their tools list. Read-only agents that can modify files create unexpected side effects.
 
@@ -199,7 +199,7 @@ Audit, review, and analysis agents should never declare `Write` or `Edit` in the
 
 ---
 
-### A5: Monolithic Prompts
+### A5: Monolithic Prompts (R13, R40)
 
 A single unstructured block of instructions — no headings, no sections, no numbered steps — is hard to follow for complex tasks and produces inconsistent output.
 
@@ -207,7 +207,7 @@ A single unstructured block of instructions — no headings, no sections, no num
 
 ---
 
-### A6: Rules Duplicating Linters
+### A6: Rules Duplicating Linters (R24)
 
 If eslint, ruff, clippy, or another static analysis tool already catches a code-level issue, a Claude rule that re-states it is redundant noise. Rules should cover intent, architecture, and NL artifact quality — things linters can't check.
 
@@ -215,7 +215,7 @@ If eslint, ruff, clippy, or another static analysis tool already catches a code-
 
 ---
 
-### A7: Agents Without Examples
+### A7: Agents Without Examples (R09)
 
 An agent description with no `<example>` blocks has unreliable triggering. Without examples, Claude must infer invocation criteria from the description alone, which degrades with ambiguous wording.
 
@@ -223,7 +223,7 @@ An agent description with no `<example>` blocks has unreliable triggering. Witho
 
 ---
 
-### A8: Opus for Mechanical Tasks
+### A8: Opus for Mechanical Tasks (R10)
 
 File discovery, JSON parsing, pattern matching, line counting — these are haiku tasks. Using opus for them is a 10-30x token cost increase with no quality benefit.
 
@@ -231,7 +231,7 @@ File discovery, JSON parsing, pattern matching, line counting — these are haik
 
 ---
 
-### A9: Hardcoded Paths
+### A9: Hardcoded Paths (R30)
 
 Absolute paths in hooks, scripts, or plugin configs break when:
 - A different user installs the plugin

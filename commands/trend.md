@@ -19,7 +19,7 @@ Read `.claude/nlpm-history.json` from the project root. If it doesn't exist, sho
 
 ### Step 2: Score Current State
 
-Dispatch the `nlpm:linter` agent to score all artifacts (or artifacts at the given path).
+Dispatch the `nlpm:scorer` and `nlpm:vague-scanner` agents in parallel to score all artifacts (or artifacts at the given path).
 
 ### Step 3: Compare Against History
 
@@ -39,7 +39,7 @@ Append current scores to `.claude/nlpm-history.json`:
       "timestamp": "2026-03-28T10:00:00Z",
       "overall": 85,
       "files": {
-        "agents/linter.md": { "score": 92, "type": "agent" },
+        "agents/scorer.md": { "score": 92, "type": "agent" },
         "commands/score.md": { "score": 95, "type": "command" }
       }
     }
@@ -56,7 +56,7 @@ Snapshot: 2026-03-28 (3rd snapshot, 2 previous)
 
 File                              Score   Previous  Delta
 --------------------------------------------------------------
-agents/linter.md                  95      92        +3 improved
+agents/scorer.md                  95      92        +3 improved
 agents/scanner.md                 90      90         0 unchanged
 commands/score.md                 95      88        +7 improved
 skills/nlpm/scoring/SKILL.md      85      85         0 unchanged

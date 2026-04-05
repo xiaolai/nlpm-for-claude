@@ -1,6 +1,6 @@
 ---
 name: conventions
-description: "Use when writing, reviewing, or validating Claude Code plugin artifacts — check frontmatter schemas, hook event names, naming conventions, prompt structure, or reference syntax. Loaded by the NLPM linter for schema validation."
+description: "Use when writing, reviewing, or validating Claude Code plugin artifacts — check frontmatter schemas, hook event names, naming conventions, prompt structure, or reference syntax. Loaded by the NLPM scorer and checker agents for schema validation."
 version: 0.1.0
 ---
 
@@ -115,8 +115,12 @@ Agents live in `agents/*.md`. They are specialized Claude instances invoked by c
 **Convention fields (not enforced by schema but strongly recommended):**
 - `model` — `haiku` / `sonnet` / `opus`; declare explicitly
 - `color` — one of `cyan`, `blue`, `magenta`, `yellow`, `green`, `red`; visual label in UI
-- `tools` — string array; only tools the agent body actually needs
-- `skills` — string array; `plugin-name:skill-name` format
+- `tools` — tools the agent body actually needs; two valid formats (both accepted by Claude Code):
+  - JSON array: `tools: ["Read", "Glob"]`
+  - Comma-separated string: `tools: Read, Glob, Grep`
+- `skills` — skill references; two valid formats:
+  - JSON array: `skills: ["nlpm:conventions"]`
+  - YAML list: `skills:\n  - nlpm:conventions`
 
 **Best practice: include `<example>` blocks in description:**
 ```markdown
@@ -373,15 +377,45 @@ type: user | feedback | project | reference
 | `reference` | External reference material copied into memory |
 
 **Rules:**
-- Every memory file must appear in `MEMORY.md` — orphaned files (present in the directory but not in the index) are flagged by the linter
+- Every memory file must appear in `MEMORY.md` — orphaned files (present in the directory but not in the index) are flagged by the scorer
 - `MEMORY.md` itself is the index; it does not need frontmatter and is not scored as a memory file
 - Memory files should not reference other files or functions that have since been deleted — stale references reduce the signal-to-noise ratio of the memory store
+
+---
+
+## 13. Rule Overrides in nlpm.local.md
+
+Users can suppress or adjust individual rules in `.claude/nlpm.local.md`:
+
+```yaml
+---
+strictness: standard
+score_threshold: 70
+rule_overrides:
+  R01: { max_penalty: -10 }     # reduce vague quantifier cap from -20 to -10
+  R05: { threshold: 600 }       # allow skills up to 600 lines instead of 500
+  R09: { min_examples: 1 }      # require only 1 example block instead of 2
+  R10: { suppress: true }       # disable model tier checking entirely
+  R23: { budget: 800 }          # increase rules budget from 500 to 800 lines
+---
+```
+
+**Override types:**
+
+| Type | Effect | Example |
+|------|--------|---------|
+| `suppress: true` | Disable the rule entirely (penalty becomes 0) | `R10: { suppress: true }` |
+| `max_penalty: N` | Cap the penalty at N (less negative = more lenient) | `R01: { max_penalty: -10 }` |
+| `threshold: N` | Adjust numeric thresholds (line limits, counts) | `R05: { threshold: 600 }` |
+| `min_examples: N` | Adjust minimum example counts | `R09: { min_examples: 1 }` |
+
+Rules not listed in `rule_overrides` use their defaults from `nlpm:scoring`.
 
 ---
 
 ## Scope Note
 
 This skill covers Claude Code plugin component schemas and conventions. It does NOT cover:
-- Scoring/quality rubric → see `nlpm:scoring`
-- Anti-patterns and best practices catalog → see `nlpm:patterns`
+- Scoring/quality rubric -> see `nlpm:scoring`
+- Anti-patterns and best practices catalog -> see `nlpm:patterns`
 - General software engineering conventions outside Claude Code artifacts

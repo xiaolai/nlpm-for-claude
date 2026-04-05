@@ -65,7 +65,7 @@ Command parses input --> dispatches agent --> formats output
 ```
 
 **Use when**: task requires AI judgment but has a clear entry point.
-**Example**: `/nlpm:score` dispatches a linter agent.
+**Example**: `/nlpm:score` dispatches a scorer agent.
 
 **File structure**:
 ```

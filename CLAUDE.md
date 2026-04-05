@@ -5,56 +5,64 @@ Natural-Language Programming Manager for Claude Code.
 ## Architecture
 
 Commands orchestrate agents. Agents use skills as reference knowledge.
-Each command does one thing — no flags.
+Each command does one thing -- no flags (except `--changed` on score).
 
 ## Commands
 
-- commands/ls.md — `/nlpm:ls` — run first to discover what NL artifacts exist in the project
-- commands/score.md — `/nlpm:score` — run to get 100-point quality scores; use after any artifact edit
-- commands/check.md — `/nlpm:check` — run to verify cross-component references before shipping
-- commands/fix.md — `/nlpm:fix` — run to auto-repair fixable issues flagged by score
-- commands/trend.md — `/nlpm:trend` — run periodically to detect quality drift over multiple sessions
-- commands/test.md — `/nlpm:test` — run NL artifact tests against .nlpm-test/*.spec.md specs (TDD)
-- commands/init.md — `/nlpm:init` — run once when adding NLPM to a new project
-- commands/shared/discover.md — artifact discovery patterns (not user-invocable)
-- commands/shared/classify.md — artifact type classification (not user-invocable)
+- commands/ls.md -- `/nlpm:ls` -- discover NL artifacts (dispatches scanner)
+- commands/score.md -- `/nlpm:score` -- 100-point quality scoring (dispatches scorer + vague-scanner in parallel)
+- commands/check.md -- `/nlpm:check` -- cross-component consistency (dispatches checker)
+- commands/fix.md -- `/nlpm:fix` -- auto-fix mechanical issues (dispatches scorer)
+- commands/trend.md -- `/nlpm:trend` -- track score history over time (dispatches scorer + vague-scanner)
+- commands/test.md -- `/nlpm:test` -- run NL-TDD specs (dispatches tester)
+- commands/init.md -- `/nlpm:init` -- configure project
+- commands/shared/discover.md -- artifact discovery patterns (not user-invocable)
+- commands/shared/classify.md -- artifact type classification (not user-invocable)
 
 ## Agents
 
-- agents/scanner.md — haiku, mechanical discovery
-- agents/linter.md — sonnet, judgment-based quality analysis
-- agents/tester.md — sonnet, evaluates artifacts against test specs
+- agents/scanner.md -- haiku, mechanical file discovery
+- agents/scorer.md -- sonnet, 100-point quality scoring (skills: scoring, conventions)
+- agents/checker.md -- sonnet, cross-component consistency (skills: conventions)
+- agents/vague-scanner.md -- haiku, mechanical vague-word counting (no skills)
+- agents/tester.md -- sonnet, evaluates artifacts against test specs (skills: testing, conventions, scoring)
 
 ## Skills
 
-### Core (used by linter/scanner/tester agents)
-- skills/nlpm/conventions/ — Claude Code + prompt conventions (refreshable)
-- skills/nlpm/patterns/ — NL programming patterns + anti-patterns
-- skills/nlpm/scoring/ — quality rubric with calibration examples
-- skills/nlpm/rules/ — the 50 rules of natural language programming (R01-R50)
-- skills/nlpm/testing/ — NL-TDD spec format, test patterns, the TDD cycle
+### Core (loaded by agents)
+- skills/nlpm/conventions/ -- Claude Code schemas, hook events, naming patterns
+- skills/nlpm/patterns/ -- NL programming patterns + anti-patterns (cross-referenced to rules)
+- skills/nlpm/scoring/ -- penalty tables with rule number cross-references
+- skills/nlpm/rules/ -- the 50 Rules of Natural Language Programming (R01-R50) -- single source of truth
+- skills/nlpm/testing/ -- NL-TDD spec format, test patterns
 
-### Writing Reference (loaded on demand when writing new artifacts)
-- skills/nlpm/writing-skills/ — how to write SKILL.md files
-- skills/nlpm/writing-agents/ — how to write agent definitions
-- skills/nlpm/writing-rules/ — how to write .claude/rules/ files
-- skills/nlpm/writing-prompts/ — universal prompt engineering guide
-- skills/nlpm/writing-hooks/ — how to write Claude Code hooks
-- skills/nlpm/writing-plugins/ — how to design and build plugins
-- skills/nlpm/orchestration/ — multi-agent workflow patterns
+### Writing Reference (loaded on demand)
+- skills/nlpm/writing-skills/ -- how to write SKILL.md files
+- skills/nlpm/writing-agents/ -- how to write agent definitions
+- skills/nlpm/writing-rules/ -- how to write .claude/rules/ files
+- skills/nlpm/writing-prompts/ -- universal prompt engineering guide
+- skills/nlpm/writing-hooks/ -- how to write Claude Code hooks
+- skills/nlpm/writing-plugins/ -- how to design and build plugins
+- skills/nlpm/orchestration/ -- multi-agent workflow patterns
 
 ## Hooks
 
-- hooks/hooks.json — PostToolUse advisory: reminds to score after editing NL artifacts
+- hooks/hooks.json -- PostToolUse command hook on Write|Edit
+- scripts/check-artifact.sh -- classifies written file, emits advisory only for NL artifacts
+
+## Self-Tests
+
+- .nlpm-test/ -- spec files for all 5 agents (dogfooding NL-TDD)
 
 ## Build & Run
 
-No build step required — this is a pure markdown plugin. Install with:
+No build step. Pure markdown plugin. Install with:
 ```
 claude plugin install nlpm@xiaolai --scope project
 ```
 
 Test by running `/nlpm:ls` on any project with NL artifacts.
+Run `/nlpm:test` to verify agent specs pass.
 
 ## Prerequisites
 
@@ -65,6 +73,7 @@ None. No Python, Node.js, or compiled dependencies.
 When modifying this plugin:
 - Run `/nlpm:score ./` after changes to verify quality stays above 90
 - Run `/nlpm:check` to verify cross-component references
+- Run `/nlpm:test` to verify agent specs pass
 - Bump version in plugin.json AND marketplace.json
 - Push plugin repo, then update central marketplace
 
@@ -73,3 +82,4 @@ When modifying this plugin:
 100-point scale. Start at 100, apply deterministic penalties.
 Floor: 0. Ceiling: 100.
 Threshold configurable via .claude/nlpm.local.md (default: 70).
+Rule overrides supported (suppress, max_penalty, threshold adjustments).

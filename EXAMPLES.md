@@ -619,7 +619,7 @@ Snapshot: 2026-03-28 (4th snapshot, 3 previous)
 
 File                              Score   Previous  Delta
 --------------------------------------------------------------
-agents/linter.md                  95      92        +3 improved
+agents/scorer.md                  95      92        +3 improved
 agents/scanner.md                 90      90         0 unchanged
 commands/score.md                 95      88        +7 improved
 commands/check.md                 90      87        +3 improved

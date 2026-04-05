@@ -26,82 +26,82 @@ Penalties stack. The floor is 0; the ceiling is 100. No bonuses — the default 
 
 ### Skills
 
-| Check | Condition | Penalty |
-|-------|-----------|---------|
-| `name` present | Missing | -25 |
-| `description` present | Missing | -25 |
-| Trigger quality | Description is generic (≤1 specific phrase) | -15 |
-| Body length | 400–500 lines | -5 |
-| Body length | >500 lines | -10 |
-| Code examples | Complex concepts with no examples | -5 |
-| Code examples | No examples at all in a technical skill | -10 |
-| Scope note | No scope note / cross-references | -3 |
+| Rule | Check | Condition | Penalty |
+|------|-------|-----------|---------|
+| -- | `name` present | Missing | -25 |
+| R04 | `description` present | Missing | -25 |
+| R04 | Trigger quality | Description is generic (≤1 specific phrase) | -15 |
+| R05 | Body length | 400–500 lines | -5 |
+| R05 | Body length | >500 lines | -10 |
+| R06 | Code examples | Complex concepts with no examples | -5 |
+| R06 | Code examples | No examples at all in a technical skill | -10 |
+| R07 | Scope note | No scope note / cross-references | -3 |
 
 ---
 
 ### Agents
 
-| Check | Condition | Penalty |
-|-------|-----------|---------|
-| `description` present | Missing | -25 |
-| `<example>` blocks | Exactly 1 example | -5 |
-| `<example>` blocks | Zero examples | -15 |
-| `model` declared | Not declared | -5 |
-| `model` appropriate | Wrong tier for task (e.g. opus for parsing) | -5 |
-| `tools` declared | Not declared | -5 |
-| Unused tools | Each tool declared but not used in body | -3 each |
-| Output format | No output format spec in body | -10 |
-| Write on read-only | Audit/review/scan agent declares Write or Edit | -10 |
+| Rule | Check | Condition | Penalty |
+|------|-------|-----------|---------|
+| R09 | `description` present | Missing | -25 |
+| R09 | `<example>` blocks | Exactly 1 example | -5 |
+| R09 | `<example>` blocks | Zero examples | -15 |
+| R10 | `model` declared | Not declared | -5 |
+| R10 | `model` appropriate | Wrong tier for task (e.g. opus for parsing) | -5 |
+| R11 | `tools` declared | Not declared | -5 |
+| R11 | Unused tools | Each tool declared but not used in body | -3 each |
+| R12 | Output format | No output format spec in body | -10 |
+| R11 | Write on read-only | Audit/review/scan agent declares Write or Edit | -10 |
 
 ---
 
 ### Commands
 
-| Check | Condition | Penalty |
-|-------|-----------|---------|
-| `description` present | Missing | -25 |
-| `argument-hint` present | Command takes input but no hint | -5 |
-| Steps numbered | Multi-step body with no numbered steps | -10 |
-| Empty input handling | No handling for empty/missing input | -10 |
-| Output format | No output format defined | -10 |
-| Error paths | No error handling for missing files or bad data | -5 |
+| Rule | Check | Condition | Penalty |
+|------|-------|-----------|---------|
+| -- | `description` present | Missing | -25 |
+| R18 | `argument-hint` present | Command takes input but no hint | -5 |
+| R14 | Steps numbered | Multi-step body with no numbered steps | -10 |
+| R15 | Empty input handling | No handling for empty/missing input | -10 |
+| R16 | Output format | No output format defined | -10 |
+| R17 | Error paths | No error handling for missing files or bad data | -5 |
 
 ---
 
 ### Shared Partials
 
-| Check | Condition | Penalty |
-|-------|-----------|---------|
-| `user-invocable: false` | Missing or set to true | -25 |
-| Purpose clear | Description doesn't state it's a partial | -10 |
+| Rule | Check | Condition | Penalty |
+|------|-------|-----------|---------|
+| R19 | `user-invocable: false` | Missing or set to true | -25 |
+| R20 | Purpose clear | Description doesn't state it's a partial | -10 |
 
 ---
 
 ### Rules
 
-| Check | Condition | Penalty |
-|-------|-----------|---------|
-| `description` present | Missing frontmatter description | -10 |
-| Format: bold imperative | No bold imperative opening | -5 |
-| Format: rationale | No rationale following the imperative | -10 |
-| Enforceability | Rule is not specific/testable | -10 |
-| Budget | Rule file over 500 lines | -15 |
-| Conflicts with other rules | Direct contradiction with another rule in same set | -20 |
-| Duplicates tooling | Re-states what eslint/ruff/clippy already catches | -10 |
+| Rule | Check | Condition | Penalty |
+|------|-------|-----------|---------|
+| R21 | `description` present | Missing frontmatter description | -10 |
+| R21 | Format: bold imperative | No bold imperative opening | -5 |
+| R21 | Format: rationale | No rationale following the imperative | -10 |
+| R22 | Enforceability | Rule is not specific/testable | -10 |
+| R23 | Budget | Rule file over 500 lines | -15 |
+| R26 | Conflicts with other rules | Direct contradiction with another rule in same set | -20 |
+| R24 | Duplicates tooling | Re-states what eslint/ruff/clippy already catches | -10 |
 
 ---
 
 ### Hooks
 
-| Check | Condition | Penalty |
-|-------|-----------|---------|
-| Valid JSON | hooks.json fails JSON parse | -25 |
-| Event names valid | Uses unrecognized event name | -15 |
-| Case correct | Event name has wrong case (e.g. `pretooluse`) | -10 |
-| Scripts exist | Referenced script file does not exist | -20 |
-| Command safety | Hook command contains dangerous patterns (rm -rf, git push --force, DROP TABLE) | -15 |
-| Matcher regex valid | Matcher pattern doesn't compile as valid regex | -10 |
-| Timeout reasonable | Hook specifies timeout > 30s (likely hangs) | -5 |
+| Rule | Check | Condition | Penalty |
+|------|-------|-----------|---------|
+| -- | Valid JSON | hooks.json fails JSON parse | -25 |
+| R27 | Event names valid | Uses unrecognized event name | -15 |
+| R27 | Case correct | Event name has wrong case (e.g. `pretooluse`) | -10 |
+| R29 | Scripts exist | Referenced script file does not exist | -20 |
+| -- | Command safety | Hook command contains dangerous patterns (rm -rf, git push --force, DROP TABLE) | -15 |
+| -- | Matcher regex valid | Matcher pattern doesn't compile as valid regex | -10 |
+| -- | Timeout reasonable | Hook specifies timeout > 30s (likely hangs) | -5 |
 
 ---
 
@@ -138,19 +138,19 @@ Penalties stack. The floor is 0; the ceiling is 100. No bonuses — the default 
 
 ### CLAUDE.md
 
-| Check | Condition | Penalty |
-|-------|-----------|---------|
-| File exists | No CLAUDE.md in plugin root | -10 |
-| Under 200 lines | CLAUDE.md exceeds 200 lines | -5 |
-| Actionable content | CLAUDE.md has no actionable guidance (just filler) | -10 |
-| Build/run command | No instructions for how to build or run the project | -10 |
-| Test command | No instructions for how to run tests | -5 |
-| Architecture overview | No structure/component description (what lives where) | -5 |
-| Valid `@` imports | Contains `@` import syntax referencing a file that doesn't exist | -10 |
-| No stale file references | Mentions files or functions that no longer exist in the repo | -10 |
-| Actionability ratio | >60% of content is description rather than instructions | -5 |
-| Prerequisites section | No section covering required tools, versions, or setup steps | -5 |
-| No rule conflicts | CLAUDE.md says X while a `.claude/rules/` file says not-X | -15 |
+| Rule | Check | Condition | Penalty |
+|------|-------|-----------|---------|
+| R49 | File exists | No CLAUDE.md in plugin root | -10 |
+| -- | Under 200 lines | CLAUDE.md exceeds 200 lines | -5 |
+| R38 | Actionable content | CLAUDE.md has no actionable guidance (just filler) | -10 |
+| R33 | Build/run command | No instructions for how to build or run the project | -10 |
+| R34 | Test command | No instructions for how to run tests | -5 |
+| R35 | Architecture overview | No structure/component description (what lives where) | -5 |
+| R36 | Valid `@` imports | Contains `@` import syntax referencing a file that doesn't exist | -10 |
+| R37 | No stale file references | Mentions files or functions that no longer exist in the repo | -10 |
+| R38 | Actionability ratio | >60% of content is description rather than instructions | -5 |
+| -- | Prerequisites section | No section covering required tools, versions, or setup steps | -5 |
+| R39 | No rule conflicts | CLAUDE.md says X while a `.claude/rules/` file says not-X | -15 |
 
 ---
 
@@ -158,24 +158,24 @@ Penalties stack. The floor is 0; the ceiling is 100. No bonuses — the default 
 
 Applies to `.md` files located in `~/.claude/projects/*/memory/` directories.
 
-| Check | Pass (+0) | Penalty |
-|-------|-----------|---------|
-| Has YAML frontmatter | Present | -15 |
-| `name` in frontmatter | Present | -10 |
-| `description` in frontmatter | Present | -10 |
-| `type` in frontmatter | Present (`user`/`feedback`/`project`/`reference`) | -5 |
-| Content matches declared type | Yes | -10 |
-| Referenced in MEMORY.md index | Yes | -5 (orphaned memory) |
-| Stale content | No references to removed files or functions | -10 |
+| Rule | Check | Pass (+0) | Penalty |
+|------|-------|-----------|---------|
+| -- | Has YAML frontmatter | Present | -15 |
+| -- | `name` in frontmatter | Present | -10 |
+| -- | `description` in frontmatter | Present | -10 |
+| -- | `type` in frontmatter | Present (`user`/`feedback`/`project`/`reference`) | -5 |
+| -- | Content matches declared type | Yes | -10 |
+| -- | Referenced in MEMORY.md index | Yes | -5 (orphaned memory) |
+| R37 | Stale content | No references to removed files or functions | -10 |
 
 ---
 
 ### All Artifact Types: Vague Quantifiers
 
-| Check | Condition | Penalty |
-|-------|-----------|---------|
-| Vague quantifier | Each occurrence of: "appropriate", "relevant", "as needed", "sufficient", "adequate", "reasonable", "properly", "correctly", "some", "several", "various" without measurable criteria | -2 each |
-| Vague quantifier cap | Total vague quantifier penalty | max -20 |
+| Rule | Check | Condition | Penalty |
+|------|-------|-----------|---------|
+| R01 | Vague quantifier | Each occurrence of: "appropriate", "relevant", "as needed", "sufficient", "adequate", "reasonable", "properly", "correctly", "some", "several", "various" without measurable criteria | -2 each |
+| R01 | Vague quantifier cap | Total vague quantifier penalty | max -20 |
 
 ---
 

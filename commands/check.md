@@ -22,7 +22,7 @@ If fewer than 2 artifacts → "Cross-component check requires multiple artifacts
 
 ### Step 2: Run Cross-Component Analysis
 
-Dispatch the `nlpm:linter` agent with ALL artifacts and the instruction to perform cross-component checks:
+Dispatch the `nlpm:checker` agent with ALL artifacts and the instruction to perform cross-component checks:
 
 1. **Reference integrity**
    - Commands reference shared partials by path (`commands/shared/name.md`) → verify file exists
