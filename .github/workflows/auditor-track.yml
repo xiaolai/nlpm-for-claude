@@ -10,7 +10,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: nlpm-auditor-registry
+  group: nlpm-track
   cancel-in-progress: false
 
 jobs:

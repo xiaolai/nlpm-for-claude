@@ -18,7 +18,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: nlpm-auditor-registry
+  group: nlpm-case-study
   cancel-in-progress: false
 
 jobs:

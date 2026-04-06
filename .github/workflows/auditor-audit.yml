@@ -18,7 +18,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: nlpm-auditor-registry
+  group: nlpm-audit-${{ github.event.inputs.repo || github.event.issue.number || github.run_id }}
   cancel-in-progress: false
 
 jobs:

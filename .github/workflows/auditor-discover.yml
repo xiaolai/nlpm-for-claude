@@ -19,8 +19,8 @@ permissions:
   issues: write
 
 concurrency:
-  group: nlpm-auditor-registry
-  cancel-in-progress: false
+  group: nlpm-discover
+  cancel-in-progress: true
 
 jobs:
   discover:
