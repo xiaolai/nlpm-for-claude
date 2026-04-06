@@ -191,7 +191,7 @@ jobs:
             | File | Type | Score | Top Issue |
             ## Bugs (PR-worthy)
             | # | File | Issue | Impact |
-          allowed_tools: Read,Glob,Grep,Write
+          claude_args: "--allowedTools Read,Glob,Grep,Write"
 
       - name: Validate results
         run: |

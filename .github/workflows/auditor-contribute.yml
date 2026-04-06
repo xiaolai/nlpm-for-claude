@@ -124,8 +124,8 @@ jobs:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt_file: /tmp/contribute-prompt.md
-          allowed_tools: Read,Glob,Grep,Write,Edit,Bash
+          prompt: "Read the prompt file at /tmp/contribute-prompt.md and follow all instructions in it."
+          claude_args: "--allowedTools Read,Glob,Grep,Write,Edit,Bash"
 
       - name: Store created PR numbers in registry
         env:

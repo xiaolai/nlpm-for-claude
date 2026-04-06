@@ -156,8 +156,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt_file: /tmp/case-study-prompt.md
-          allowed_tools: Read,Glob,Grep,Write,Bash
+          prompt: "Read the prompt file at /tmp/case-study-prompt.md and follow all instructions in it."
+          claude_args: "--allowedTools Read,Glob,Grep,Write,Bash"
 
       # ================================================================
       # STEP A: Self-Review — 6 perspectives (replaces external Codex review)
@@ -223,8 +223,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt_file: /tmp/self-review-prompt.md
-          allowed_tools: Read,Glob,Grep,Write
+          prompt: "Read the prompt file at /tmp/self-review-prompt.md and follow all instructions in it."
+          claude_args: "--allowedTools Read,Glob,Grep,Write"
 
       # ================================================================
       # STEP B: Apply review fixes
@@ -262,8 +262,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt_file: /tmp/apply-fixes-prompt.md
-          allowed_tools: Read,Edit,Grep
+          prompt: "Read the prompt file at /tmp/apply-fixes-prompt.md and follow all instructions in it."
+          claude_args: "--allowedTools Read,Edit,Grep"
 
       # ================================================================
       # STEP C: Verify facts against GitHub API
@@ -381,8 +381,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt_file: /tmp/fix-links-prompt.md
-          allowed_tools: Read,Edit,Grep
+          prompt: "Read the prompt file at /tmp/fix-links-prompt.md and follow all instructions in it."
+          claude_args: "--allowedTools Read,Edit,Grep"
 
       # ================================================================
       # STEP D: Polish prose — ornate wording
@@ -451,8 +451,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt_file: /tmp/polish-prompt.md
-          allowed_tools: Read,Edit,Grep
+          prompt: "Read the prompt file at /tmp/polish-prompt.md and follow all instructions in it."
+          claude_args: "--allowedTools Read,Edit,Grep"
 
       # ================================================================
       # STEP E: Validate all links (final pass after polish)
@@ -567,7 +567,7 @@ jobs:
             - graph: edges use -->
             - sequenceDiagram: declare participants
             Do NOT change non-mermaid content.
-          allowed_tools: Read,Edit,Grep
+          claude_args: "--allowedTools Read,Edit,Grep"
 
       - name: Generate and compress cover image
         env:

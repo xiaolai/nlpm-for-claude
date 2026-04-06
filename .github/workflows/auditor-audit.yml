@@ -396,8 +396,8 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt_file: /tmp/master-audit-prompt.md
-          allowed_tools: Read,Glob,Grep,Write
+          prompt: "Read the prompt file at /tmp/master-audit-prompt.md and follow all instructions in it."
+          claude_args: "--allowedTools Read,Glob,Grep,Write"
 
       # ================================================================
       # COMMIT AND CLOSE
