@@ -1,0 +1,1 @@
+{"date":"2026-04-06","repo":"anthropics/claude-plugins-official","event":"audit_complete","score":96,"security":"REVIEW","artifacts":103,"bugs":4,"quality_issues":16,"security_findings":{"critical":0,"high":0,"medium":4,"low":3},"report":"auditor/audits/anthropics-claude-plugins-official.md"}

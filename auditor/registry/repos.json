@@ -10,6 +10,18 @@
       "score": 98,
       "strategy": "batched",
       "security": "CLEAR"
+    },
+    "anthropics/claude-plugins-official": {
+      "status": "audited",
+      "score": 96,
+      "strategy": "progressive",
+      "security": "REVIEW",
+      "artifacts": 103,
+      "bugs": 4,
+      "quality_issues": 16,
+      "security_findings": 7,
+      "audit_date": "2026-04-06",
+      "report": "auditor/audits/anthropics-claude-plugins-official.md"
     }
   },
   "metadata": {
