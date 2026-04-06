@@ -662,6 +662,7 @@ jobs:
           git config user.name "nlpm-auditor[bot]"
           git config user.email "nlpm-auditor[bot]@users.noreply.github.com"
           git add case-studies/ auditor/logs/events.jsonl
+          bash auditor/scripts/guard-protected-paths.sh || exit 1
           git diff --cached --quiet || {
             git commit -m "case-study: $TARGET_REPO ($LINES lines)"
             git push
@@ -673,6 +674,7 @@ jobs:
              auditor/registry/repos.json > /tmp/reg.json && mv /tmp/reg.json auditor/registry/repos.json
 
           git add auditor/registry/repos.json
+          bash auditor/scripts/guard-protected-paths.sh || exit 1
           git diff --cached --quiet || {
             git commit -m "chore: mark $TARGET_REPO complete"
             git push

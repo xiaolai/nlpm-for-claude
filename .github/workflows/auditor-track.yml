@@ -87,6 +87,7 @@ jobs:
           git config user.name "nlpm-auditor[bot]"
           git config user.email "nlpm-auditor[bot]@users.noreply.github.com"
           git add auditor/registry/repos.json auditor/logs/events.jsonl
+          bash auditor/scripts/guard-protected-paths.sh || exit 1
           git diff --cached --quiet || {
             git commit -m "track: $(date +%Y-%m-%d) — $TRACKED tracked, $CASE_READY case-study ready"
             git push
