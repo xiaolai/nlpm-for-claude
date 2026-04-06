@@ -393,11 +393,21 @@ jobs:
           Should we submit PRs? How many? Which bugs are worth fixing?
           FOOTER
 
+      - name: Read prompt into env
+        id: prompt_content
+        run: |
+          # Store prompt content for the action
+          PROMPT=$(cat auditor-prompt.md)
+          # Write to env file (handles multiline)
+          echo "AUDIT_PROMPT<<PROMPT_DELIMITER" >> "$GITHUB_ENV"
+          echo "$PROMPT" >> "$GITHUB_ENV"
+          echo "PROMPT_DELIMITER" >> "$GITHUB_ENV"
+
       - name: Audit with Claude Code
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt: "Read the prompt file at auditor-prompt.md and follow all instructions in it."
+          prompt: ${{ env.AUDIT_PROMPT }}
           claude_args: "--allowedTools Read,Glob,Grep,Write"
 
       # ================================================================
