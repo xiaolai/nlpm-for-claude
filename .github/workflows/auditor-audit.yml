@@ -489,6 +489,31 @@ jobs:
 
           gh issue edit "$ISSUE_NUM" --add-label "audit-complete" --remove-label "audit-ready" 2>/dev/null || true
 
+          # Post summary comment on the tracking issue
+          BUGS=$(grep -c '^| [0-9]' "$REPORT" 2>/dev/null | head -1 || echo "0")
+          BUG_COUNT=$(sed -n '/## Bugs/,/## Quality/p' "$REPORT" 2>/dev/null | grep -c '^| [0-9]' || echo "0")
+
+          COMMENT_BODY="## Audit Complete: ${TARGET_REPO}
+
+**Score: ${SCORE}/100** | Artifacts: ${TOTAL} | Strategy: ${STRATEGY}
+
+$(head -50 "$REPORT" 2>/dev/null || echo 'Report unavailable')
+
+---
+*Full report: [auditor/audits/${SLUG}.md](https://github.com/${GITHUB_REPOSITORY}/blob/main/auditor/audits/${SLUG}.md)*"
+
+          if [ "$BUG_COUNT" -gt 0 ]; then
+            COMMENT_BODY="${COMMENT_BODY}
+
+**${BUG_COUNT} bug(s) found.** To submit fix PRs to the target repo, add the \`contribute-approved\` label to this issue."
+          else
+            COMMENT_BODY="${COMMENT_BODY}
+
+No bugs found — quality issues only. No PRs needed."
+          fi
+
+          gh issue comment "$ISSUE_NUM" --body "$COMMENT_BODY" 2>/dev/null || echo "WARNING: failed to post issue comment"
+
       - name: Summary
         env:
           TOTAL: ${{ steps.triage.outputs.total }}
