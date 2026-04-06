@@ -1,5 +1,5 @@
 #!/bin/bash
-# Append a structured JSON event to logs/events.jsonl
+# Append a structured JSON event to auditor/logs/events.jsonl
 # Usage: source scripts/log-event.sh
 #        log_event "discover" "search_complete" '{"candidates": 42, "new": 15}'
 #        log_event "audit" "score_computed" '{"repo": "owner/name", "score": 74}'
@@ -21,7 +21,7 @@ log_event() {
     --argjson rn "$run_num" \
     --argjson d "${data:-{}}" \
     '{timestamp: $ts, workflow: $wf, event: $ev, run_id: $rid, run_number: $rn, data: $d}' \
-    >> logs/events.jsonl
+    >> auditor/logs/events.jsonl
 
   echo "[$workflow] $event: $data"
 }
@@ -30,7 +30,7 @@ log_event() {
 commit_logs() {
   git config user.name "nlpm-auditor[bot]"
   git config user.email "nlpm-auditor[bot]@users.noreply.github.com"
-  git add logs/events.jsonl
+  git add auditor/logs/events.jsonl
   git diff --cached --quiet || {
     git commit -m "log: $(date +%Y-%m-%d) $1"
     git push
