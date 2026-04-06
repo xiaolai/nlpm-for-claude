@@ -193,6 +193,10 @@ scripts/
 | v0.6.0 | Shipped | Expanded auto-fix, cross-plugin prep |
 | v0.7.0 | Current | Agent split (scorer/checker/vague-scanner), working hooks, self-test specs, git-aware scoring, rule overrides, deduplication |
 
+## Case Studies
+
+- [When the Linter Met Its Match](case-studies/how-we-helped-gsd.md) -- Auditing the 48k-star `gsd-build/get-shit-done` project: 80 files scored, 5 PRs accepted, and the false-positive that improved NLPM itself.
+
 ## Prerequisites
 
 None. Pure markdown plugin -- no Python, no Node.js, no compiled dependencies.
