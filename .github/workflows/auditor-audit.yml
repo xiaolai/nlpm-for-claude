@@ -427,11 +427,10 @@ jobs:
           source auditor/scripts/log-event.sh
 
           REPORT="auditor/audits/${SLUG}.md"
-          SCORE="null"
+          SCORE=0
           if [ -f "$REPORT" ]; then
-            # Try multiple score extraction patterns
-            SCORE=$(grep -oE 'Score[^0-9]*([0-9]+)/100' "$REPORT" | head -1 | grep -oE '[0-9]+' | head -1 || echo "null")
-            [ -z "$SCORE" ] && SCORE="null"
+            EXTRACTED=$(grep -oE '[0-9]+/100' "$REPORT" | head -1 | grep -oE '^[0-9]+' || echo "")
+            [ -n "$EXTRACTED" ] && SCORE="$EXTRACTED"
           fi
 
           log_event "audit" "audit_complete" "{\"repo\": \"$TARGET_REPO\", \"score\": $SCORE, \"artifacts\": $TOTAL, \"strategy\": \"$STRATEGY\"}"
@@ -440,6 +439,8 @@ jobs:
              '.repos[$name].status = "audited" | .repos[$name].score = $score | .repos[$name].strategy = $strategy' \
              auditor/registry/repos.json > /tmp/reg.json && mv /tmp/reg.json auditor/registry/repos.json
 
+          # Re-enable git credentials for push
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY.git"
           git config user.name "nlpm-auditor[bot]"
           git config user.email "nlpm-auditor[bot]@users.noreply.github.com"
           git add auditor/audits/ auditor/registry/ auditor/logs/events.jsonl

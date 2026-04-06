@@ -168,6 +168,8 @@ jobs:
 
       - name: Log and commit
         if: inputs.dry_run != true && inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           source auditor/scripts/log-event.sh
 
@@ -179,6 +181,7 @@ jobs:
 
           git config user.name "nlpm-auditor[bot]"
           git config user.email "nlpm-auditor[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git add auditor/registry/repos.json auditor/logs/events.jsonl
           bash auditor/scripts/guard-protected-paths.sh || exit 1
           git diff --cached --quiet || {
