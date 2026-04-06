@@ -4,6 +4,7 @@ description: |
 
   <example>
   Context: User runs /nlpm:check on a plugin directory
+  user: "/nlpm:check"
   assistant: "I'll use the checker to verify cross-component consistency."
   </example>
   <example>
