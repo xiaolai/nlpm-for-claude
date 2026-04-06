@@ -636,6 +636,7 @@ jobs:
           bash auditor/scripts/guard-protected-paths.sh || exit 1
           git diff --cached --quiet || {
             git commit -m "audit: $TARGET_REPO ($SCORE/100, security:$SECURITY, $STRATEGY, $TOTAL artifacts)"
+            git pull --rebase origin main || true
             git push
           }
 
