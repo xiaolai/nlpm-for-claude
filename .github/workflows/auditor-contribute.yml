@@ -102,7 +102,11 @@ jobs:
 
             ## Instructions
 
-            1. Read the audit report at `${{ steps.report.outputs.report_path }}`. Identify ONLY items in the "Bugs (PR-worthy)" section.
+            1. Read the audit report at `${{ steps.report.outputs.report_path }}`. Identify items from TWO sections:
+               a. "Bugs (PR-worthy)" — NL artifact bugs (missing frontmatter, broken references, etc.)
+               b. "Security Fixes (PR-worthy, Medium/Low only)" — safe security improvements (pin deps, tighten configs, etc.)
+
+               NEVER fix Critical or High security issues via PR. Those require private disclosure via SECURITY.md or direct maintainer contact.
 
             2. Check contribution guidelines:
                Run: gh api repos/${{ steps.target.outputs.repo }}/contents/CONTRIBUTING.md --jq .name 2>/dev/null
