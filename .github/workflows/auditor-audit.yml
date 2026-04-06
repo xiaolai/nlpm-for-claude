@@ -282,11 +282,20 @@ jobs:
           echo "Files to audit:"
           echo "$FILE_LIST"
 
+      - name: Clean stale report
+        env:
+          TARGET_REPO: ${{ steps.target.outputs.repo }}
+        run: |
+          SLUG="${TARGET_REPO//\//-}"
+          rm -f "auditor/audits/${SLUG}.md"
+          echo "Removed stale report (if any)"
+
       - name: Audit with Claude Code
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: "--allowedTools Read,Glob,Grep,Write"
+          show_full_output: true
+          claude_args: "--allowedTools Read,Glob,Grep,Write,Edit"
           prompt: |
             You are an NLPM quality auditor. Your task: read source files, score each one, and write an audit report.
 
