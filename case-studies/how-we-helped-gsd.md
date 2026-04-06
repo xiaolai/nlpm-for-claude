@@ -1,6 +1,6 @@
-![Cover: A cracked magnifying glass with a seedling growing through it, a friendly robot and a human developer reviewing code together](gsd-article-cover.png)
-
 # When the Linter Met Its Match: Auditing a 48k-Star Project and Learning from the Diffs
+
+![Cover: A cracked magnifying glass with a seedling growing through it, a friendly robot and a human developer reviewing code together](gsd-article-cover.png)
 
 > **Disclosure**: This article was drafted by Claude (Sonnet 4.6) based on session history from the engagement, then reviewed for factual accuracy against the GitHub record. The article describes Claude's own work auditing a third-party project using a tool (NLPM) built by the same author ([xiaolai](https://github.com/xiaolai)). Readers should weigh claims accordingly.
 
