@@ -1,4 +1,5 @@
 ---
+name: trend
 description: "Show quality score trends over time — track improvements, detect degradation"
 argument-hint: "[path]"
 allowed-tools: Read, Write, Glob, Task

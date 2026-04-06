@@ -1,4 +1,5 @@
 ---
+name: score
 description: "Score NL programming artifacts — 100-point quality analysis per file"
 argument-hint: "[path]"
 allowed-tools: Read, Glob, Grep, Bash, Task

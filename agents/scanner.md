@@ -1,4 +1,5 @@
 ---
+name: scanner
 description: |
   Discover and classify all NL programming artifacts in a repository.
   <example>

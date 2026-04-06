@@ -1,4 +1,5 @@
 ---
+name: init
 description: "Initialize NLPM for this project — detect artifacts, set lint strictness"
 allowed-tools: Read, Write, Glob, AskUserQuestion
 ---
