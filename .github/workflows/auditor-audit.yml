@@ -490,29 +490,28 @@ jobs:
           gh issue edit "$ISSUE_NUM" --add-label "audit-complete" --remove-label "audit-ready" 2>/dev/null || true
 
           # Post summary comment on the tracking issue
-          BUGS=$(grep -c '^| [0-9]' "$REPORT" 2>/dev/null | head -1 || echo "0")
           BUG_COUNT=$(sed -n '/## Bugs/,/## Quality/p' "$REPORT" 2>/dev/null | grep -c '^| [0-9]' || echo "0")
+          REPORT_URL="https://github.com/${GITHUB_REPOSITORY}/blob/main/auditor/audits/${SLUG}.md"
+          REPORT_PREVIEW=$(head -50 "$REPORT" 2>/dev/null || echo "Report unavailable")
 
-          COMMENT_BODY="## Audit Complete: ${TARGET_REPO}
+          {
+            echo "## Audit Complete: ${TARGET_REPO}"
+            echo ""
+            echo "Score: ${SCORE}/100 | Artifacts: ${TOTAL} | Strategy: ${STRATEGY}"
+            echo ""
+            echo "${REPORT_PREVIEW}"
+            echo ""
+            echo "---"
+            echo "Full report: ${REPORT_URL}"
+            echo ""
+            if [ "$BUG_COUNT" -gt 0 ]; then
+              echo "${BUG_COUNT} bug(s) found. To submit fix PRs to the target repo, add the \`contribute-approved\` label to this issue."
+            else
+              echo "No bugs found. Quality issues only, no PRs needed."
+            fi
+          } > /tmp/issue-comment.md
 
-**Score: ${SCORE}/100** | Artifacts: ${TOTAL} | Strategy: ${STRATEGY}
-
-$(head -50 "$REPORT" 2>/dev/null || echo 'Report unavailable')
-
----
-*Full report: [auditor/audits/${SLUG}.md](https://github.com/${GITHUB_REPOSITORY}/blob/main/auditor/audits/${SLUG}.md)*"
-
-          if [ "$BUG_COUNT" -gt 0 ]; then
-            COMMENT_BODY="${COMMENT_BODY}
-
-**${BUG_COUNT} bug(s) found.** To submit fix PRs to the target repo, add the \`contribute-approved\` label to this issue."
-          else
-            COMMENT_BODY="${COMMENT_BODY}
-
-No bugs found — quality issues only. No PRs needed."
-          fi
-
-          gh issue comment "$ISSUE_NUM" --body "$COMMENT_BODY" 2>/dev/null || echo "WARNING: failed to post issue comment"
+          gh issue comment "$ISSUE_NUM" --body-file /tmp/issue-comment.md 2>/dev/null || echo "WARNING: failed to post issue comment"
 
       - name: Summary
         env:
