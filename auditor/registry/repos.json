@@ -4,6 +4,12 @@
       "status": "audited",
       "score": 97,
       "strategy": "single"
+    },
+    "hashicorp/agent-skills": {
+      "status": "audited",
+      "score": 98,
+      "strategy": "batched",
+      "security": "CLEAR"
     }
   },
   "metadata": {
