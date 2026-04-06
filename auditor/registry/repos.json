@@ -1,5 +1,11 @@
 {
-  "repos": {},
+  "repos": {
+    "xiaolai/loc-guardian-for-claude": {
+      "status": "audited",
+      "score": 0,
+      "strategy": "single"
+    }
+  },
   "metadata": {
     "last_discovery": null,
     "total_discovered": 0,
