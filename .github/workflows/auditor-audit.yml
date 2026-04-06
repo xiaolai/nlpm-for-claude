@@ -394,10 +394,8 @@ jobs:
 
       - name: Audit with Claude Code
         uses: anthropics/claude-code-action@v1
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: "Read the prompt file at /tmp/master-audit-prompt.md and follow all instructions in it."
           claude_args: "--allowedTools Read,Glob,Grep,Write"
 
