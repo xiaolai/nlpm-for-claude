@@ -245,7 +245,7 @@ jobs:
       # For progressive strategy on large repos, this filters what needs deep scoring
       # ================================================================
       - name: Shallow scan — frontmatter check
-        if: steps.triage.outputs.strategy == 'progressive'
+        if: false  # Disabled: jq parsing issues with grep -c in subshell. TODO: rewrite with awk
         id: shallow
         run: |
           cd target-repo
