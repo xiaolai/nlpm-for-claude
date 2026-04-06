@@ -1,0 +1,233 @@
+name: Daily Report
+
+on:
+  schedule:
+    - cron: '0 22 * * *'  # Daily 22:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: nlpm-auditor-registry
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
+      - name: Collect pipeline state
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/report
+
+          # Registry stats
+          jq '{
+            total: (.repos | length),
+            by_status: (.repos | to_entries | group_by(.value.status) | map({(.[0].value.status): length}) | add),
+            case_study_candidates: [.repos | to_entries[] | select(.value.case_study_candidate == true) | .key],
+            top_by_stars: [.repos | to_entries | sort_by(-.value.stars) | .[:5][] | {repo: .key, stars: .value.stars, status: .value.status}]
+          }' auditor/registry/repos.json > /tmp/report/registry-stats.json
+
+          # Issue counts by label
+          COUNTS="{}"
+          for label in audit-candidate audit-ready audit-complete contribute-approved prs-submitted case-study-ready complete; do
+            COUNT=$(gh issue list --label "$label" --state open --json number --jq 'length' 2>/dev/null || echo 0)
+            COUNTS=$(echo "$COUNTS" | jq --arg l "$label" --argjson c "$COUNT" '. + {($l): $c}')
+          done
+          echo "$COUNTS" > /tmp/report/issue-counts.json
+
+          # Recent activity (last 24h)
+          YESTERDAY=$(date -u -d "yesterday" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -v-1d +%Y-%m-%dT%H:%M:%SZ)
+          gh issue list --state all --json number,title,state,createdAt,closedAt,labels \
+            --jq "[.[] | select(.createdAt > \"$YESTERDAY\" or (.closedAt // \"\" | . > \"$YESTERDAY\"))]" \
+            > /tmp/report/recent-activity.json 2>/dev/null || echo "[]" > /tmp/report/recent-activity.json
+
+          # PR tracking
+          > /tmp/report/pr-updates-raw.jsonl
+          jq -c '.repos | to_entries[] | select(.value.status == "contributed" or .value.status == "tracked")' auditor/registry/repos.json | while read -r entry; do
+            REPO=$(echo "$entry" | jq -r '.key')
+            gh pr list --repo "$REPO" --author xiaolai --state all \
+              --json number,state,title,mergedAt,closedAt \
+              --jq "[.[] | . + {repo: \"$REPO\"}]" >> /tmp/report/pr-updates-raw.jsonl 2>/dev/null || true
+            sleep 1
+          done
+          [ -s /tmp/report/pr-updates-raw.jsonl ] && jq -s 'add' /tmp/report/pr-updates-raw.jsonl > /tmp/report/pr-updates.json 2>/dev/null || echo "[]" > /tmp/report/pr-updates.json
+
+      - name: Collect feedback signals
+        run: |
+          python3 << 'PYEOF'
+          import json, os, re
+
+          with open('auditor/feedback/log.json') as f:
+              feedback = json.load(f)
+
+          try:
+              with open('/tmp/report/pr-updates.json') as f:
+                  prs = json.load(f)
+          except:
+              prs = []
+
+          merged = [p for p in prs if p.get('state') == 'MERGED']
+          rejected = [p for p in prs if p.get('state') == 'CLOSED' and not p.get('mergedAt')]
+          pending = [p for p in prs if p.get('state') == 'OPEN']
+
+          # Count rule hits across audit reports
+          rule_hits = {}
+          if os.path.isdir('auditor/audits'):
+              for fname in os.listdir('auditor/audits'):
+                  if fname.endswith('.md'):
+                      with open(f'auditor/audits/{fname}') as f:
+                          for match in re.findall(r'\bR(\d{2})\b', f.read()):
+                              rule = f'R{match}'
+                              rule_hits[rule] = rule_hits.get(rule, 0) + 1
+
+          feedback['metadata'].update({
+              'total_prs_submitted': len(prs),
+              'total_prs_merged': len(merged),
+              'total_prs_rejected': len(rejected)
+          })
+          for rule, count in rule_hits.items():
+              feedback['rule_stats'].setdefault(rule, {'total_hits': 0, 'led_to_merged_pr': 0, 'led_to_rejected_pr': 0})
+              feedback['rule_stats'][rule]['total_hits'] = count
+
+          with open('auditor/feedback/log.json', 'w') as f:
+              json.dump(feedback, f, indent=2)
+
+          summary = {
+              'prs_total': len(prs), 'prs_merged': len(merged),
+              'prs_rejected': len(rejected), 'prs_pending': len(pending),
+              'acceptance_rate': f"{len(merged)/len(prs)*100:.0f}%" if prs else "N/A",
+              'top_rules': sorted(rule_hits.items(), key=lambda x: -x[1])[:10],
+              'rejection_patterns': [{'repo': p['repo'], 'title': p['title']} for p in rejected[:5]]
+          }
+          with open('/tmp/report/feedback-summary.json', 'w') as f:
+              json.dump(summary, f, indent=2)
+          PYEOF
+
+      - name: Generate report
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          mkdir -p auditor/reports
+
+          python3 << PYEOF
+          import json
+          from datetime import datetime
+
+          date = datetime.utcnow().strftime('%Y-%m-%d')
+
+          def load(path, default):
+              try:
+                  with open(path) as f: return json.load(f)
+              except: return default
+
+          reg = load('/tmp/report/registry-stats.json', {})
+          issues = load('/tmp/report/issue-counts.json', {})
+          activity = load('/tmp/report/recent-activity.json', [])
+          fb = load('/tmp/report/feedback-summary.json', {})
+
+          L = []
+          L.append(f"# Daily Report: {date}\n")
+
+          # Pipeline
+          L.append("## Pipeline\n")
+          L.append("| Stage | Count |")
+          L.append("|-------|-------|")
+          by_s = reg.get('by_status') or {}
+          for s in ['discovered', 'audited', 'contributed', 'tracked', 'complete']:
+              L.append(f"| {s} | {by_s.get(s, 0)} |")
+          L.append(f"| **total** | **{reg.get('total', 0)}** |\n")
+
+          # Open issues
+          open_issues = {k: v for k, v in issues.items() if v > 0}
+          if open_issues:
+              L.append("## Awaiting Action\n")
+              L.append("| Label | Count |")
+              L.append("|-------|-------|")
+              for label, count in sorted(open_issues.items()):
+                  L.append(f"| \`{label}\` | {count} |")
+              L.append("")
+
+          # PR outcomes
+          L.append("## PR Scorecard\n")
+          L.append("| | Count |")
+          L.append("|--------|-------|")
+          L.append(f"| Submitted | {fb.get('prs_total', 0)} |")
+          L.append(f"| Merged | {fb.get('prs_merged', 0)} |")
+          L.append(f"| Rejected | {fb.get('prs_rejected', 0)} |")
+          L.append(f"| Pending | {fb.get('prs_pending', 0)} |")
+          L.append(f"| **Acceptance rate** | **{fb.get('acceptance_rate', 'N/A')}** |\n")
+
+          # Top rules
+          top = fb.get('top_rules', [])
+          if top:
+              L.append("## Rule Frequency\n")
+              L.append("*Rules that fire most — the frequent flyers of the rubric.*\n")
+              L.append("| Rule | Hits | Signal |")
+              L.append("|------|------|--------|")
+              for rule, hits in top:
+                  signal = "noise?" if hits > 20 else "watch" if hits > 10 else "normal"
+                  L.append(f"| {rule} | {hits} | {signal} |")
+              L.append("")
+
+          # Rejections
+          rej = fb.get('rejection_patterns', [])
+          if rej:
+              L.append("## Lessons from Rejections\n")
+              L.append("*Each rejection is a mirror — what did NLPM get wrong?*\n")
+              for r in rej:
+                  L.append(f"- **{r['repo']}**: {r['title']}")
+              L.append("")
+
+          # Activity
+          if activity:
+              L.append("## Today\n")
+              for item in activity[:10]:
+                  state = item.get('state', '?')
+                  title = item.get('title', '?')
+                  L.append(f"- [{state}] {title}")
+              L.append("")
+
+          # Self-evolution
+          L.append("## Self-Evolution Signals\n")
+          L.append("*What should feed back into NLPM itself.*\n")
+
+          if top and len(top) >= 1:
+              L.append(f"- **Hottest rule**: {top[0][0]} ({top[0][1]} hits) — earning its keep, or crying wolf?")
+          rejected_n = fb.get('prs_rejected', 0)
+          total_n = fb.get('prs_total', 0)
+          if total_n > 0 and rejected_n > 0:
+              L.append(f"- **Rejection rate {rejected_n}/{total_n}**: every 'no' is a rule that needs rethinking")
+          merged_n = fb.get('prs_merged', 0)
+          if merged_n > 0:
+              L.append(f"- **{merged_n} merged**: these rules found real bugs — protect them")
+          if not top and rejected_n == 0 and merged_n == 0:
+              L.append("- Pipeline needs more data — run discover.yml to start")
+          L.append("")
+
+          with open(f'auditor/reports/{date}.md', 'w') as f:
+              f.write('\n'.join(L))
+          print(f"Report: auditor/reports/{date}.md")
+          PYEOF
+
+      - name: Log and commit
+        run: |
+          source auditor/scripts/log-event.sh
+
+          TOTAL=$(jq '.repos | length' auditor/registry/repos.json)
+          log_event "daily-report" "report_generated" "{\"total_repos\": $TOTAL}"
+
+          git config user.name "nlpm-auditor[bot]"
+          git config user.email "nlpm-auditor[bot]@users.noreply.github.com"
+          git add auditor/reports/ auditor/feedback/ auditor/logs/events.jsonl
+          git diff --cached --quiet || {
+            git commit -m "report: daily $(date +%Y-%m-%d)"
+            git push
+          }

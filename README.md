@@ -197,9 +197,25 @@ scripts/
 
 - [When the Linter Met Its Match](case-studies/how-we-helped-gsd.md) -- Auditing the 48k-star `gsd-build/get-shit-done` project: 80 files scored, 5 PRs accepted, and the false-positive that improved NLPM itself.
 
+## Auditor — Self-Evolution Pipeline
+
+The `auditor/` directory contains a GitHub Actions pipeline that systematically discovers, audits, and contributes to Claude Code repos across GitHub. Learnings feed back into NLPM's rules.
+
+```
+discover (weekly) → audit → contribute PRs → track merges → write case study
+                                                    ↓
+                                           feedback/log.json
+                                                    ↓
+                                         update NLPM rules → audit better
+```
+
+6 workflows: `auditor-discover`, `auditor-audit`, `auditor-contribute`, `auditor-track`, `auditor-case-study`, `auditor-daily-report`. Human-in-the-loop via issue labels at 3 decision points.
+
+See [auditor/README.md](auditor/README.md) for full documentation.
+
 ## Prerequisites
 
-None. Pure markdown plugin -- no Python, no Node.js, no compiled dependencies.
+None. Pure markdown plugin -- no Python, no Node.js, no compiled dependencies. The auditor workflows require `CLAUDE_CODE_OAUTH_TOKEN`, `PAT_TOKEN`, and `OPENAI_API_KEY` secrets on the GitHub repo.
 
 ## License
 

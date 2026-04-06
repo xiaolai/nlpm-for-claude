@@ -1,0 +1,12 @@
+{
+  "events": [],
+  "rule_stats": {},
+  "metadata": {
+    "created": "2026-04-05",
+    "total_events": 0,
+    "total_audits": 0,
+    "total_prs_submitted": 0,
+    "total_prs_merged": 0,
+    "total_prs_rejected": 0
+  }
+}

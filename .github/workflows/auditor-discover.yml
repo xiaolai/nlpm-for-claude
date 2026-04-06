@@ -1,0 +1,209 @@
+name: Discover Claude Code Repos
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly Monday 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preview results without creating issues'
+        type: boolean
+        default: false
+      min_stars:
+        description: 'Minimum star count'
+        type: number
+        default: 500
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: nlpm-auditor-registry
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
+      - name: Search GitHub for Claude Code repos
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MIN_STARS: ${{ inputs.min_stars || 500 }}
+        run: |
+          echo "Searching for Claude Code plugin and skill repos..."
+
+          RESULTS_FILE=$(mktemp)
+          echo "[]" > "$RESULTS_FILE"
+
+          for query in \
+            "claude code plugin in:name,description language:Markdown" \
+            "claude code skill in:name,description language:Markdown" \
+            "claude-plugin in:name language:Markdown" \
+            ".claude-plugin plugin.json in:path"; do
+
+            gh search repos "$query" \
+              --sort stars \
+              --limit 50 \
+              --json fullName,stargazersCount,updatedAt,description,isArchived \
+              --jq "[.[] | select(.stargazersCount >= ($MIN_STARS | tonumber)) | select(.isArchived == false)]" \
+              2>/dev/null >> "$RESULTS_FILE" || true
+            sleep 2
+          done
+
+          jq -s 'add | group_by(.fullName) | map(max_by(.stargazersCount))' "$RESULTS_FILE" > /tmp/candidates.json
+          echo "Found $(jq length /tmp/candidates.json) unique candidate repos"
+
+      - name: Filter against registry
+        run: |
+          jq --slurpfile registry auditor/registry/repos.json '
+            [.[] | select(.fullName as $name | ($registry[0].repos | has($name)) | not)]
+          ' /tmp/candidates.json > /tmp/new_candidates.json
+          echo "New repos not yet in registry: $(jq length /tmp/new_candidates.json)"
+
+      - name: Probe repos for NL artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "[]" > /tmp/worthy.json
+          > /tmp/worthy_raw.jsonl
+
+          jq -c '.[]' /tmp/new_candidates.json | while read -r repo; do
+            FULL_NAME=$(echo "$repo" | jq -r '.fullName')
+            STARS=$(echo "$repo" | jq -r '.stargazersCount')
+            echo "Probing $FULL_NAME ($STARS stars)..."
+
+            ARTIFACT_COUNT=$(gh api "repos/$FULL_NAME/git/trees/HEAD?recursive=1" \
+              --jq '[.tree[].path | select(
+                test("agents/.*\\.md$") or
+                test("commands/.*\\.md$") or
+                test("skills/.*/SKILL\\.md$") or
+                test("\\.claude-plugin/plugin\\.json$") or
+                test("\\.claude/commands/.*\\.md$")
+              )] | length' 2>/dev/null || echo "0")
+
+            if [ "$ARTIFACT_COUNT" -ge 5 ]; then
+              echo "  -> $ARTIFACT_COUNT artifacts — worthy"
+              echo "$repo" | jq --argjson count "$ARTIFACT_COUNT" '. + {artifact_count: $count}' >> /tmp/worthy_raw.jsonl
+            else
+              echo "  -> $ARTIFACT_COUNT artifacts — skipping"
+            fi
+            sleep 1
+          done
+
+          if [ -s /tmp/worthy_raw.jsonl ]; then
+            jq -s '.' /tmp/worthy_raw.jsonl > /tmp/worthy.json
+          fi
+          echo "Worthy repos (5+ artifacts): $(jq length /tmp/worthy.json)"
+
+      - name: Update registry and create issues
+        if: inputs.dry_run != true && inputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          jq -c '.[]' /tmp/worthy.json | while read -r repo; do
+            FULL_NAME=$(echo "$repo" | jq -r '.fullName')
+            STARS=$(echo "$repo" | jq -r '.stargazersCount')
+            ARTIFACTS=$(echo "$repo" | jq -r '.artifact_count')
+            DESC=$(echo "$repo" | jq -r '.description // "No description"')
+
+            # Create issue using a tempfile for body (avoids injection)
+            BODY_FILE=$(mktemp)
+            cat > "$BODY_FILE" <<ISSUE_BODY
+          ## Repo
+
+          https://github.com/$FULL_NAME
+
+          | Field | Value |
+          |-------|-------|
+          | Stars | $STARS |
+          | NL Artifacts | $ARTIFACTS |
+
+          ### Next Steps
+
+          1. Review the repo — check CONTRIBUTING.md, recent activity, PR history
+          2. If worthy: add label \`audit-ready\` to trigger the audit workflow
+          3. If not: close this issue
+
+          ### Checklist
+
+          - [ ] Accepts contributions
+          - [ ] Updated in last 60 days
+          - [ ] Not a fork or mirror
+          - [ ] Has meaningful NL artifacts
+          ISSUE_BODY
+
+            ISSUE_URL=$(gh issue create \
+              --title "Audit candidate: $FULL_NAME" \
+              --label "audit-candidate" \
+              --body-file "$BODY_FILE" 2>/dev/null || echo "")
+
+            ISSUE_NUM=$(echo "$ISSUE_URL" | grep -o '[0-9]*$' || echo "0")
+            echo "Created issue #$ISSUE_NUM for $FULL_NAME"
+            rm -f "$BODY_FILE"
+
+            # Update registry
+            jq --arg name "$FULL_NAME" \
+               --arg now "$NOW" \
+               --argjson stars "$STARS" \
+               --argjson artifacts "$ARTIFACTS" \
+               --arg desc "$DESC" \
+               --argjson issue "${ISSUE_NUM:-0}" \
+               '.repos[$name] = {
+                  discovered: $now, stars: $stars, artifacts: $artifacts,
+                  description: $desc, status: "discovered",
+                  score: null, audit_issue: $issue, prs: []
+                } | .metadata.total_discovered += 1 | .metadata.last_discovery = $now' \
+               auditor/registry/repos.json > /tmp/reg.json && mv /tmp/reg.json auditor/registry/repos.json
+
+            sleep 2
+          done
+
+      - name: Log and commit
+        if: inputs.dry_run != true && inputs.dry_run != 'true'
+        run: |
+          source auditor/scripts/log-event.sh
+
+          CANDIDATES=$(jq length /tmp/candidates.json 2>/dev/null || echo 0)
+          NEW=$(jq length /tmp/new_candidates.json 2>/dev/null || echo 0)
+          WORTHY=$(jq length /tmp/worthy.json 2>/dev/null || echo 0)
+
+          log_event "discover" "search_complete" "{\"candidates\": $CANDIDATES, \"new\": $NEW, \"worthy\": $WORTHY}"
+
+          git config user.name "nlpm-auditor[bot]"
+          git config user.email "nlpm-auditor[bot]@users.noreply.github.com"
+          git add auditor/registry/repos.json auditor/logs/events.jsonl
+          git diff --cached --quiet || {
+            git commit -m "chore: discovery $(date +%Y-%m-%d) — $WORTHY new repos"
+            git push
+          }
+
+      - name: Summary
+        run: |
+          CANDIDATES=$(jq length /tmp/candidates.json 2>/dev/null || echo 0)
+          NEW=$(jq length /tmp/new_candidates.json 2>/dev/null || echo 0)
+          WORTHY=$(jq length /tmp/worthy.json 2>/dev/null || echo 0)
+          {
+            echo "## Discovery Summary"
+            echo ""
+            echo "| Metric | Count |"
+            echo "|--------|-------|"
+            echo "| Candidates | $CANDIDATES |"
+            echo "| New | $NEW |"
+            echo "| Worthy (5+ artifacts) | $WORTHY |"
+            echo ""
+            if [ -f /tmp/worthy.json ] && [ "$WORTHY" -gt 0 ]; then
+              echo "### Worthy Repos"
+              echo ""
+              echo "| Repo | Stars | Artifacts |"
+              echo "|------|-------|-----------|"
+              jq -r '.[] | "| \(.fullName) | \(.stargazersCount) | \(.artifact_count) |"' /tmp/worthy.json
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

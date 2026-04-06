@@ -1,0 +1,93 @@
+name: Track PR Status
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Daily 08:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: nlpm-auditor-registry
+  cancel-in-progress: false
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+
+      - name: Check submitted PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          jq -c '.repos | to_entries[] | select(.value.status == "contributed")' auditor/registry/repos.json | while read -r entry; do
+            REPO=$(echo "$entry" | jq -r '.key')
+            ISSUE_NUM=$(echo "$entry" | jq -r '.value.audit_issue')
+            echo "Checking PRs for $REPO..."
+
+            # Query only PRs we created (stored in pipeline_prs)
+            PR_NUMS=$(echo "$entry" | jq -r '.value.pipeline_prs // [] | .[]')
+            PRS="[]"
+            if [ -n "$PR_NUMS" ]; then
+              ITEMS="[]"
+              for pr_num in $PR_NUMS; do
+                PR_DATA=$(gh pr view "$pr_num" --repo "$REPO" \
+                  --json number,state,mergedAt,closedAt,title 2>/dev/null || echo "")
+                if [ -n "$PR_DATA" ]; then
+                  ITEMS=$(echo "$ITEMS" | jq --argjson pr "$PR_DATA" '. + [$pr]')
+                fi
+                sleep 0.5
+              done
+              PRS="$ITEMS"
+            fi
+
+            MERGED=$(echo "$PRS" | jq '[.[] | select(.state == "MERGED")] | length')
+            CLOSED=$(echo "$PRS" | jq '[.[] | select(.state == "CLOSED" and .mergedAt == null)] | length')
+            OPEN=$(echo "$PRS" | jq '[.[] | select(.state == "OPEN")] | length')
+            echo "  $MERGED merged, $CLOSED closed, $OPEN open"
+
+            jq --arg name "$REPO" --argjson prs "$PRS" \
+               '.repos[$name].prs = $prs' \
+               auditor/registry/repos.json > /tmp/reg.json && mv /tmp/reg.json auditor/registry/repos.json
+
+            if [ "$OPEN" -eq 0 ] && [ "$(echo "$PRS" | jq length)" -gt 0 ]; then
+              jq --arg name "$REPO" '.repos[$name].status = "tracked"' \
+                 auditor/registry/repos.json > /tmp/reg.json && mv /tmp/reg.json auditor/registry/repos.json
+
+              if [ "$MERGED" -gt 0 ]; then
+                jq --arg name "$REPO" '.repos[$name].case_study_candidate = true' \
+                   auditor/registry/repos.json > /tmp/reg.json && mv /tmp/reg.json auditor/registry/repos.json
+
+                if [ "$ISSUE_NUM" != "null" ] && [ "$ISSUE_NUM" != "0" ]; then
+                  gh issue comment "$ISSUE_NUM" \
+                    --body "All PRs resolved. $MERGED merged, $CLOSED closed. Ready for case study." \
+                    2>/dev/null || true
+                  gh issue edit "$ISSUE_NUM" --add-label "case-study-ready" 2>/dev/null || true
+                fi
+              fi
+            fi
+          done
+
+      - name: Log and commit
+        run: |
+          source auditor/scripts/log-event.sh
+
+          CONTRIBUTED=$(jq '[.repos | to_entries[] | select(.value.status == "contributed")] | length' auditor/registry/repos.json)
+          TRACKED=$(jq '[.repos | to_entries[] | select(.value.status == "tracked")] | length' auditor/registry/repos.json)
+          CASE_READY=$(jq '[.repos | to_entries[] | select(.value.case_study_candidate == true)] | length' auditor/registry/repos.json)
+
+          log_event "track" "status_check" "{\"contributed\": $CONTRIBUTED, \"tracked\": $TRACKED, \"case_study_ready\": $CASE_READY}"
+
+          git config user.name "nlpm-auditor[bot]"
+          git config user.email "nlpm-auditor[bot]@users.noreply.github.com"
+          git add auditor/registry/repos.json auditor/logs/events.jsonl
+          git diff --cached --quiet || {
+            git commit -m "track: $(date +%Y-%m-%d) — $TRACKED tracked, $CASE_READY case-study ready"
+            git push
+          }

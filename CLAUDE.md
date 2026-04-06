@@ -83,3 +83,32 @@ When modifying this plugin:
 Floor: 0. Ceiling: 100.
 Threshold configurable via .claude/nlpm.local.md (default: 70).
 Rule overrides supported (suppress, max_penalty, threshold adjustments).
+
+## Auditor (Self-Evolution Pipeline)
+
+The `auditor/` subdirectory contains a GitHub Actions pipeline that discovers, audits, and contributes to Claude Code plugin/skill repos across GitHub — then feeds learnings back into NLPM's rules.
+
+### Workflows (.github/workflows/auditor-*.yml)
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| auditor-discover | Weekly cron / manual | Find repos with 500+ stars and 5+ NL artifacts |
+| auditor-audit | Issue labeled `audit-ready` | Score artifacts via claude-code-action (triage + batched) |
+| auditor-contribute | Issue labeled `contribute-approved` | Fork, PR for verified bugs only |
+| auditor-track | Daily cron | Check PR merge status |
+| auditor-case-study | Issue labeled `case-study-ready` | Write article, self-review, polish, cover image |
+| auditor-daily-report | Daily cron | Pipeline state, rule frequency, rejection patterns |
+
+### Data (auditor/)
+
+| Path | Purpose |
+|------|---------|
+| auditor/registry/repos.json | Tracking database |
+| auditor/feedback/log.json | Rule stats, PR outcomes — the self-evolution data |
+| auditor/audits/ | Per-repo scoring reports |
+| auditor/reports/ | Daily reports |
+| auditor/logs/events.jsonl | Structured event log |
+
+### The Loop
+
+audit → contribute → track outcomes → feedback log → update NLPM rules → audit better
