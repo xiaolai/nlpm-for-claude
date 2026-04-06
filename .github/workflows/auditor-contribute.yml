@@ -33,6 +33,18 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Check security gate
+        env:
+          ISSUE_NUM: ${{ github.event.issue.number || inputs.issue_number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Block if security-blocked label is present
+          LABELS=$(gh issue view "$ISSUE_NUM" --json labels -q '[.labels[].name] | join(",")' 2>/dev/null || echo "")
+          if echo "$LABELS" | grep -q "security-blocked"; then
+            echo "ERROR: Security gate blocked this repo. Remove 'security-blocked' label after manual review to proceed."
+            exit 1
+          fi
+
       - name: Extract target
         id: target
         env:

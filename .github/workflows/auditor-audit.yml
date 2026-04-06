@@ -59,6 +59,90 @@ jobs:
           git clone --depth 1 "https://github.com/$TARGET_REPO.git" target-repo
 
       # ================================================================
+      # SECURITY SCAN: check executable artifacts before NL audit
+      # ================================================================
+      - name: Security scan — detect executable surfaces
+        id: security
+        run: |
+          cd target-repo
+
+          HOOKS=$(find . -name 'hooks.json' -path '*/hooks/*' 2>/dev/null | wc -l | tr -d ' ')
+          SCRIPTS=$(find . -type f \( -name '*.sh' -o -name '*.py' -o -name '*.js' \) -not -path '*/node_modules/*' -not -path '*/.git/*' 2>/dev/null | wc -l | tr -d ' ')
+          MCP=$(find . -name '.mcp.json' 2>/dev/null | wc -l | tr -d ' ')
+          PKG=$(find . -name 'package.json' -not -path '*/node_modules/*' -maxdepth 2 2>/dev/null | wc -l | tr -d ' ')
+          EXEC_TOTAL=$((HOOKS + SCRIPTS + MCP + PKG))
+
+          echo "hooks=$HOOKS" >> "$GITHUB_OUTPUT"
+          echo "scripts=$SCRIPTS" >> "$GITHUB_OUTPUT"
+          echo "mcp=$MCP" >> "$GITHUB_OUTPUT"
+          echo "pkg=$PKG" >> "$GITHUB_OUTPUT"
+          echo "exec_total=$EXEC_TOTAL" >> "$GITHUB_OUTPUT"
+
+          echo "=== Execution Surface Inventory ==="
+          echo "  Hooks: $HOOKS"
+          echo "  Scripts: $SCRIPTS"
+          echo "  MCP configs: $MCP"
+          echo "  Package manifests: $PKG"
+          echo "  Total: $EXEC_TOTAL"
+
+          # Quick pattern scan for critical risks
+          CRITICAL=0
+          HIGH=0
+
+          if [ "$SCRIPTS" -gt 0 ] || [ "$HOOKS" -gt 0 ]; then
+            # Scan for critical patterns
+            CRITICAL=$(grep -rlE 'curl.*\|.*sh|wget.*\|.*bash|eval\s+["'"'"']?\$|/dev/tcp/|base64.*\|.*(sh|python|bash)' \
+              --include='*.sh' --include='*.py' --include='*.js' . 2>/dev/null | wc -l | tr -d ' ')
+            # Scan for high patterns
+            HIGH=$(grep -rlE 'subprocess\.(call|run|Popen).*shell\s*=\s*True|os\.system\(|sudo\s+' \
+              --include='*.sh' --include='*.py' --include='*.js' . 2>/dev/null | wc -l | tr -d ' ')
+          fi
+
+          # Check for postinstall scripts in package.json
+          if [ "$PKG" -gt 0 ]; then
+            POSTINSTALL=$(grep -rl '"postinstall"' --include='package.json' . 2>/dev/null | wc -l | tr -d ' ')
+            HIGH=$((HIGH + POSTINSTALL))
+          fi
+
+          echo "critical=$CRITICAL" >> "$GITHUB_OUTPUT"
+          echo "high=$HIGH" >> "$GITHUB_OUTPUT"
+
+          RISK="CLEAR"
+          [ "$HIGH" -gt 0 ] && RISK="HIGH"
+          [ "$CRITICAL" -gt 0 ] && RISK="CRITICAL"
+          echo "risk=$RISK" >> "$GITHUB_OUTPUT"
+
+          echo ""
+          echo "Risk level: $RISK (critical=$CRITICAL, high=$HIGH)"
+
+      - name: Security gate — block if critical
+        if: steps.security.outputs.critical != '0'
+        env:
+          TARGET_REPO: ${{ steps.target.outputs.repo }}
+          ISSUE_NUM: ${{ steps.target.outputs.issue }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CRITICAL: ${{ steps.security.outputs.critical }}
+          HIGH: ${{ steps.security.outputs.high }}
+        run: |
+          echo "SECURITY GATE: BLOCKED"
+          echo "Critical security patterns found in $CRITICAL file(s)."
+          echo "This repo will NOT receive automated PRs."
+
+          # Post warning on tracking issue
+          {
+            echo "## Security Gate: BLOCKED"
+            echo ""
+            echo "Critical security patterns detected in **${CRITICAL}** file(s)."
+            echo "High-risk patterns in **${HIGH}** file(s)."
+            echo ""
+            echo "This repo will be audited for NL quality but will NOT receive automated PRs."
+            echo "Manual security review required before any contributions."
+          } > /tmp/security-comment.md
+
+          gh issue comment "$ISSUE_NUM" --body-file /tmp/security-comment.md 2>/dev/null || true
+          gh issue edit "$ISSUE_NUM" --add-label "security-blocked" 2>/dev/null || true
+
+      # ================================================================
       # TRIAGE: inventory artifacts, detect repo type, plan strategy
       # ================================================================
       - name: Triage — inventory and plan
