@@ -1,4 +1,5 @@
 ---
+name: fix
 description: "Auto-fix fixable issues in NL artifacts — missing fields, heading gaps, field renames"
 argument-hint: "[path]"
 allowed-tools: Read, Write, Edit, Glob, Grep, Task

@@ -1,4 +1,5 @@
 ---
+name: check
 description: "Check cross-component consistency — reference integrity, orphans, contradictions"
 argument-hint: "[path]"
 allowed-tools: Read, Glob, Grep, Task

@@ -1,4 +1,5 @@
 ---
+name: test
 description: "Run NL artifact tests — evaluate artifacts against .nlpm-test/*.spec.md specifications (TDD for natural language programming)"
 argument-hint: "[spec-path]"
 allowed-tools: Read, Glob, Grep, Task

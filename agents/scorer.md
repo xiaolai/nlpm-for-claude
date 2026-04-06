@@ -1,4 +1,5 @@
 ---
+name: scorer
 description: |
   Scores NL programming artifacts on a 100-point scale using deterministic penalties. Use this agent when scoring plugin components, checking artifact quality, or running quality analysis on commands, agents, skills, rules, hooks, or CLAUDE.md.
 

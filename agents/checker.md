@@ -1,4 +1,5 @@
 ---
+name: checker
 description: |
   Cross-component consistency analyzer for NL programming artifacts. Checks reference integrity, detects orphans, finds behavioral contradictions, and identifies terminology drift across plugin components.
 

@@ -1,4 +1,5 @@
 ---
+name: vague-scanner
 description: |
   Mechanical scanner for vague quantifier words in NL artifacts. Counts occurrences of flagged words and reports exact locations. Use this agent for fast, deterministic vague-word counting before the scorer applies judgment.
 
