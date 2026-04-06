@@ -277,23 +277,24 @@ jobs:
 
             # Quick score: count missing required fields
             ISSUES=0
-            [ "$TYPE" = "agent" ] && [ "$HAS_DESC" -eq 0 ] && ISSUES=$((ISSUES + 1))
-            [ "$TYPE" = "agent" ] && [ "$HAS_MODEL" -eq 0 ] && ISSUES=$((ISSUES + 1))
-            [ "$TYPE" = "command" ] && [ "$HAS_DESC" -eq 0 ] && ISSUES=$((ISSUES + 1))
-            [ "$TYPE" = "skill" ] && [ "$HAS_NAME" -eq 0 ] && ISSUES=$((ISSUES + 1))
-            [ "$TYPE" = "skill" ] && [ "$HAS_DESC" -eq 0 ] && ISSUES=$((ISSUES + 1))
-            NEEDS_DEEP=$( [ "$ISSUES" -gt 0 ] && echo "true" || echo "false" )
+            [ "$TYPE" = "agent" ] && [ "$HAS_DESC" -eq 0 ] && ISSUES=$((ISSUES + 1)) || true
+            [ "$TYPE" = "agent" ] && [ "$HAS_MODEL" -eq 0 ] && ISSUES=$((ISSUES + 1)) || true
+            [ "$TYPE" = "command" ] && [ "$HAS_DESC" -eq 0 ] && ISSUES=$((ISSUES + 1)) || true
+            [ "$TYPE" = "skill" ] && [ "$HAS_NAME" -eq 0 ] && ISSUES=$((ISSUES + 1)) || true
+            [ "$TYPE" = "skill" ] && [ "$HAS_DESC" -eq 0 ] && ISSUES=$((ISSUES + 1)) || true
+            NEEDS_DEEP="false"
+            [ "$ISSUES" -gt 0 ] && NEEDS_DEEP="true"
 
             LINE_COUNT=$(wc -l < "$filepath" | tr -d ' ')
 
             jq -cn \
               --arg path "$filepath" --arg type "$TYPE" \
-              --argjson issues "$ISSUES" --argjson lines "$LINE_COUNT" \
-              --argjson deep "$NEEDS_DEEP" \
-              --argjson has_name "$HAS_NAME" --argjson has_desc "$HAS_DESC" \
-              --argjson has_model "$HAS_MODEL" --argjson has_tools "$HAS_TOOLS" \
-              '{path:$path, type:$type, issues:$issues, lines:$lines, needs_deep:$deep,
-                frontmatter:{name:($has_name>0), description:($has_desc>0), model:($has_model>0), tools:($has_tools>0)}}' \
+              --arg issues "$ISSUES" --arg lines "$LINE_COUNT" \
+              --arg deep "$NEEDS_DEEP" \
+              --arg has_name "$HAS_NAME" --arg has_desc "$HAS_DESC" \
+              --arg has_model "$HAS_MODEL" --arg has_tools "$HAS_TOOLS" \
+              '{path:$path, type:$type, issues:($issues|tonumber), lines:($lines|tonumber), needs_deep:($deep=="true"),
+                frontmatter:{name:(($has_name|tonumber)>0), description:(($has_desc|tonumber)>0), model:(($has_model|tonumber)>0), tools:(($has_tools|tonumber)>0)}}' \
               >> /tmp/shallow-raw.jsonl
           done
 
