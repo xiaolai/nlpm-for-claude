@@ -428,16 +428,38 @@ jobs:
           source auditor/scripts/log-event.sh
 
           REPORT="auditor/audits/${SLUG}.md"
+
+          # Debug: show what files Claude created
+          echo "=== Files modified/created by Claude ==="
+          find . -name "*.md" -newer .git/HEAD -not -path './.github/*' | head -20
+          echo "=== Checking expected report path ==="
+          ls -la "auditor/audits/" 2>/dev/null || echo "auditor/audits/ does not exist"
+
           SCORE=0
           if [ -f "$REPORT" ]; then
             EXTRACTED=$(grep -oE '[0-9]+/100' "$REPORT" | head -1 | grep -oE '^[0-9]+' || echo "")
             [ -n "$EXTRACTED" ] && SCORE="$EXTRACTED"
+            echo "Score extracted: $SCORE"
+          else
+            echo "Report not at expected path, searching..."
+            FOUND=$(find . -name "*audit*" -o -name "*nlpm*" 2>/dev/null | grep -i audit | head -5)
+            echo "Found: $FOUND"
+            if [ -n "$FOUND" ]; then
+              FIRST=$(echo "$FOUND" | head -1)
+              mkdir -p "auditor/audits"
+              cp "$FIRST" "$REPORT"
+              echo "Copied $FIRST to $REPORT"
+              EXTRACTED=$(grep -oE '[0-9]+/100' "$REPORT" | head -1 | grep -oE '^[0-9]+' || echo "")
+              [ -n "$EXTRACTED" ] && SCORE="$EXTRACTED"
+            fi
           fi
 
-          log_event "audit" "audit_complete" "{\"repo\": \"$TARGET_REPO\", \"score\": $SCORE, \"artifacts\": $TOTAL, \"strategy\": \"$STRATEGY\"}"
+          # Use string args to avoid jq --argjson failures
+          TOTAL="${TOTAL:-0}"
+          log_event "audit" "audit_complete" "{\"repo\": \"$TARGET_REPO\", \"score\": $SCORE, \"artifacts\": ${TOTAL}, \"strategy\": \"$STRATEGY\"}"
 
-          jq --arg name "$TARGET_REPO" --argjson score "$SCORE" --arg strategy "$STRATEGY" \
-             '.repos[$name].status = "audited" | .repos[$name].score = $score | .repos[$name].strategy = $strategy' \
+          jq --arg name "$TARGET_REPO" --arg score "$SCORE" --arg strategy "$STRATEGY" \
+             '.repos[$name].status = "audited" | .repos[$name].score = ($score | tonumber) | .repos[$name].strategy = $strategy' \
              auditor/registry/repos.json > /tmp/reg.json && mv /tmp/reg.json auditor/registry/repos.json
 
           # Re-enable git credentials for push
