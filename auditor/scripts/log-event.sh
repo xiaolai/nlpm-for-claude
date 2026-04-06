@@ -13,13 +13,17 @@ log_event() {
   local run_id="${GITHUB_RUN_ID:-local}"
   local run_num="${GITHUB_RUN_NUMBER:-0}"
 
+  # Validate data is valid JSON, fall back to wrapping as string
+  local safe_data
+  safe_data=$(echo "${data:-{}}" | jq -c '.' 2>/dev/null || jq -cn --arg d "${data:-}" '{raw: $d}')
+
   jq -cn \
     --arg ts "$timestamp" \
     --arg wf "$workflow" \
     --arg ev "$event" \
     --arg rid "$run_id" \
-    --argjson rn "$run_num" \
-    --argjson d "${data:-{}}" \
+    --argjson rn "${run_num:-0}" \
+    --argjson d "$safe_data" \
     '{timestamp: $ts, workflow: $wf, event: $ev, run_id: $rid, run_number: $rn, data: $d}' \
     >> auditor/logs/events.jsonl
 
